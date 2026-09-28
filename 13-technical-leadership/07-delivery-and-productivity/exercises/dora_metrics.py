@@ -105,8 +105,8 @@ def percentile(values: list[float], p: float) -> float:
 
     >>> percentile([4, 1, 3, 2], 50)
     2.5
-    >>> percentile([1, 2, 3, 4], 90)
-    3.7
+    >>> percentile([1, 2, 3, 4], 75)
+    3.25
     """
     raise NotImplementedError("演習1: percentile を実装してください")
 

@@ -41,7 +41,7 @@ ANSWERS_B = {
     "在宅勤務は週何日まで？": "3日",
     "タクシーを使える条件は？": "22時以降の移動か、重い荷物がある場合",
     "宿泊費の上限は？": "1泊12,000円",
-    "経費精算の締め切りは？": "翌月末まで",
+    "経費精算の締め切りは？": "月末",
 }
 
 
@@ -60,9 +60,9 @@ class TestMetrics(unittest.TestCase):
 
     def test_char_f1(self):
         self.assertEqual(char_f1("週3日まで", "週3日まで"), 1.0)
-        # 予測「3日です」(4文字) と参照「週3日まで」(5文字) の共通は「3」「日」の 2 文字
-        self.assertAlmostEqual(char_f1("3日です", "週3日まで"), 2 * (2 / 4) * (2 / 5) / (2 / 4 + 2 / 5))
-        self.assertEqual(char_f1("まったく違う", "週3日まで"), 0.0)
+        # 予測「3日です」(4文字) と参照「週3日まで」(5文字) の共通は「3」「日」「で」の 3 文字
+        self.assertAlmostEqual(char_f1("3日です", "週3日まで"), 2 * (3 / 4) * (3 / 5) / (3 / 4 + 3 / 5))
+        self.assertEqual(char_f1("全然違う", "週3日まで"), 0.0)
         self.assertAlmostEqual(char_f1("ああい", "あい"), 2 * (2 / 3) * 1.0 / (2 / 3 + 1.0), msg="重複は多重集合で数える")
         self.assertEqual(char_f1("", ""), 1.0)
         self.assertEqual(char_f1("", "あ"), 0.0)
@@ -92,7 +92,7 @@ class TestBootstrap(unittest.TestCase):
         self.assertAlmostEqual(r.diff, 0.3)
         self.assertAlmostEqual(r.ci_low, 0.0)
         self.assertAlmostEqual(r.ci_high, 0.6)
-        self.assertAlmostEqual(r.p_b_better, 0.948)
+        self.assertAlmostEqual(r.p_b_better, 0.969)
 
     def test_properties_on_random_data(self):
         rng = random.Random(7)
@@ -121,7 +121,7 @@ class TestJudges(unittest.TestCase):
         perfect = judge("q", "週3日まで", "週3日まで")
         self.assertIsInstance(perfect, JudgeVerdict)
         self.assertEqual(perfect.score, 5)
-        self.assertEqual(judge("q", "わかりません", "週3日まで").score, 1)
+        self.assertEqual(judge("q", "不明", "週3日まで").score, 1)
         self.assertTrue(1 <= judge("q", "3日です", "週3日まで").score <= 5)
 
     def test_pairwise_cancels_position_bias(self):
@@ -144,7 +144,7 @@ class TestCompareVersions(unittest.TestCase):
         self.assertEqual(len(report.scores_a), 5)
         self.assertGreater(report.bootstrap.mean_b, report.bootstrap.mean_a)
         self.assertEqual(report.improvements, ["q1", "q2", "q3", "q4"])
-        self.assertEqual(report.regressions, [], "q5 は A も B も同じくらい外れている")
+        self.assertEqual(report.regressions, ["q5"], "平均が上がっても、個別に悪化した問題を見逃さない")
         self.assertFalse(should_block_release(report))
 
     def test_regressions_are_listed_and_block_release(self):

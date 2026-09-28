@@ -16,6 +16,10 @@ ABORT = "ABORT"
 
 CRASH_POINTS = ("after_prepare", "after_decision", "during_decision")
 
+
+def _deliver(p: "Participant", decision: str) -> bool:
+    return p.commit() if decision == COMMIT else p.abort()
+
 # ---------------------------------------------------------------------------
 # 演習1: 参加者
 # ---------------------------------------------------------------------------
@@ -129,7 +133,7 @@ class Coordinator:
             return "CRASHED"
         # フェーズ 2: 決定を全員に伝える
         for i, p in enumerate(self.participants):
-            p.commit() if decision == COMMIT else p.abort()
+            _deliver(p, decision)  # 停止中の参加者には届かない（復帰後に finish で再送する）
             if self.crash_at == "during_decision" and i == 0:
                 self.up = False
                 return "CRASHED"
@@ -141,7 +145,7 @@ class Coordinator:
             return
         for p in self.participants:
             if p.up and p.outcome() is None:
-                p.commit() if decision == COMMIT else p.abort()
+                _deliver(p, decision)
 
     def recover(self) -> str:
         self.up = True
@@ -181,7 +185,7 @@ def cooperative_termination(participants: Sequence[Participant]) -> str | None:
         return None  # 稼働中の全員が PREPARED（か停止中）: 誰も結果を知らない → ブロック
     for p in up:
         if p.log and p.log[-1] == PREPARED:
-            p.commit() if decision == COMMIT else p.abort()
+            _deliver(p, decision)
         elif not p.log:
             p.abort()  # まだ投票していない参加者も、ABORT を記録して以後の PREPARE に NO と答える
     return decision
