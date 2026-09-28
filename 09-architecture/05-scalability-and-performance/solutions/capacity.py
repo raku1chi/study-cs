@@ -55,7 +55,7 @@ def servers_needed(peak: float, qps_per_server: float, *, target_utilization: fl
         raise ValueError(f"目標使用率は (0, 1] の範囲です: {target_utilization!r}")
     if spare < 0:
         raise ValueError("spare は 0 以上です")
-    # 700 / (100 * 0.7) は浮動小数点では 10.000000000000002 になる。
+    # 4900 / (700 * 0.7) は浮動小数点では 10.000000000000002 になる。
     # そのまま切り上げると 11 台になるので、誤差の分だけ引いてから切り上げる
     needed = math.ceil(peak / (qps_per_server * target_utilization) - EPSILON)
     return max(needed, 0) + spare

@@ -23,9 +23,9 @@
 | 14.3 | [事業と財務のリテラシー](03-business-and-finance/README.md) | 本文 5h ＋ 演習 5h | `npv.py`・`saas_metrics.py`・`budget_model.py`、記述: 技術投資の 1 ページ提案書 | 財務三表, 粗利率, ソフトウェアの資産計上, NRR/GRR, CAC/LTV, フルロードコスト, ランウェイ, NPV/IRR |
 | 14.4 | [経営陣・取締役会・投資家とのコミュニケーション](04-executive-communication/README.md) | 本文 3h ＋ 演習 4h | `kpi_report.py`（信号表示の KPI サマリー）、記述: 取締役会報告、障害の経営向け要約、ピラミッド構造のメモ、投資家の想定問答 | CEO との関係, 取締役会報告, 信号表示, ピラミッド原則, SCQA, 悪い知らせ |
 | 14.5 | [ガバナンス・リスク・コンプライアンスと法務](05-governance-risk-compliance/README.md) | 本文 6h ＋ 演習 6h | `license_policy.py`（SPDX 式の構文解析とポリシー判定）・`breach_notice.py`（漏えい報告の整理。教育用）、記述: IT 全般統制のコントロールマトリクス、契約書のレビュー | リスク登録簿, ISMS/SOC 2, 個人情報保護法, GDPR, OSS ライセンス, SBOM, 偽装請負, J-SOX |
-| 14.6 | [危機管理 — 重大障害とセキュリティ事故](06-crisis-management/README.md) | 本文 4h ＋ 演習 5h | `sla_credit.py`（SLA クレジットの計算）、記述: ランサムウェアの机上演習の台本、危機コミュニケーションの文面 | 危機管理計画, 危機対応チーム, 机上演習, ランサムウェア, 情報漏えい, ホールディング・ステートメント |
-| 14.7 | [技術デューデリジェンスとM&A](07-due-diligence-and-ma/README.md) | 本文 4h ＋ 演習 6h | `dd_scorecard.py`（DD のスコアカード）、記述: 質問票の絞り込み、OSS プロジェクトの模擬 DD | 技術 DD, データルーム, レッドフラグ, 表明保証, PMI, 100 日計画 |
-| 14.8 | [AI戦略とAIガバナンス](08-ai-strategy/README.md) | 本文 4h ＋ 演習 6h | `ai_roi.py`・`ai_usecase_tier.py`、記述: AI 活用の機会のポートフォリオ、AI 利用規程の草案 | 機会のマッピング, 堀（moat）, AI ゲートウェイ, AI 台帳, EU AI 法, ROI |
+| 14.6 | [危機管理 — 重大障害とセキュリティ事故](06-crisis-management/README.md) | 本文 4h ＋ 演習 5h | `sla_credit.py`（障害時間の集計・稼働率・SLA クレジットの計算）、記述: ランサムウェアの机上演習の台本、危機コミュニケーションの文面 | 危機管理計画, 危機対応チーム, 机上演習, ランサムウェア, 情報漏えい, ホールディング・ステートメント |
+| 14.7 | [技術デューデリジェンスとM&A](07-due-diligence-and-ma/README.md) | 本文 4h ＋ 演習 6h | `dd_scorecard.py`（DD のスコアカードと是正の優先順位）、記述: 質問票の絞り込み、OSS プロジェクトの模擬 DD | 技術 DD, データルーム, レッドフラグ, 表明保証, PMI, 100 日計画 |
+| 14.8 | [AI戦略とAIガバナンス](08-ai-strategy/README.md) | 本文 4h ＋ 演習 6h | `ai_usecase_tier.py`（ユースケースのリスク区分）・`ai_roi.py`（ROI・損益分岐点・感度分析）、記述: AI 活用の機会のポートフォリオ、AI 利用規程の草案 | 機会のマッピング, 堀（moat）, AI ゲートウェイ, AI 台帳, EU AI 法, ROI |
 | 14.9 | [CTOの自己管理とキャリア](09-sustaining-yourself/README.md) | 本文 3h ＋ 演習 6h | 記述: 自分の取扱説明書、年間の学習計画、カレンダー監査、支援のネットワーク、後継者計画 | 支援のネットワーク, 委任, 意思決定の疲労, 燃え尽き, 後継者計画, 倫理 |
 
 合計の目安は、本文 約 36 時間、演習 約 46 時間です。コード演習は `python3 tools/check.py 14` でまとめてテストできます（章を指定するなら `python3 tools/check.py 14.3` のように）。

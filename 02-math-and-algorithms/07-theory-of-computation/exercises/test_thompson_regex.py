@@ -1,4 +1,4 @@
-"""2.7 計算理論 — テスト（正規表現エンジン: 演習5・6）
+"""2.7 計算理論 — テスト（正規表現エンジン: 演習5）
 
 実行: python3 tools/check.py 2.7   （またはこのディレクトリで python3 -m unittest -v）
 """
@@ -108,7 +108,7 @@ class TestGivenParser(unittest.TestCase):
 
 
 @with_timeout(5)
-class TestExercise5ThompsonNFA(unittest.TestCase):
+class TestExercise5aThompsonNFA(unittest.TestCase):
     def test_examples(self):
         cases = [
             ("abc", "abc", True), ("abc", "abd", False), ("abc", "ab", False),
@@ -189,7 +189,7 @@ class TestExercise5ThompsonNFA(unittest.TestCase):
 
 
 @with_timeout(5)
-class TestExercise6Backtracking(unittest.TestCase):
+class TestExercise5bBacktracking(unittest.TestCase):
     def test_examples(self):
         for pattern, text, expected in [
             ("abc", "abc", True), ("a|b", "c", False), ("(a|b)*abb", "aabb", True),

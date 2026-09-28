@@ -1,7 +1,7 @@
 """2.7 計算理論 — 演習（有限オートマトンとスタック: 演習1〜4）
 
 各クラス・関数の docstring（仕様）を読み、`raise NotImplementedError(...)` を実装に置き換えてください。
-正規表現エンジンの演習（演習5・6）は thompson_regex.py にあります。
+正規表現エンジンの演習（演習5）は thompson_regex.py にあります。
 
 テストの実行（リポジトリのルートで）:
     python3 tools/check.py 2.7          # 合格数を表示（automata と thompson_regex の両方）

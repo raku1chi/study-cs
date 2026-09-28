@@ -1,4 +1,4 @@
-"""2.7 計算理論 — 演習（Thompson の構成法による正規表現エンジン: 演習5・6）
+"""2.7 計算理論 — 演習（Thompson の構成法による正規表現エンジン: 演習5）
 
 構文木（AST）・構文解析器 parse()・NFA の表現（State, Program）は実装済みです。まず読んで理解してください。
 `raise NotImplementedError(...)` の部分（compile_nfa・Regex・backtrack_fullmatch）を実装します。
@@ -23,12 +23,12 @@
     未対応の特殊文字 ^ $ [ ] { } や、\\d のようなエスケープ、a** のような量指定子の連続は
     RegexSyntaxError にする（黙って違う意味で解釈しないため）。
 
-制約: 演習5・6 では re モジュールを使わないでください（テストでは答え合わせに使っています）。
+制約: 演習5 では re モジュールを使わないでください（テストでは答え合わせに使っています）。
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Union  # noqa: F401  Callable は演習6で使えます
+from typing import Callable, Union  # noqa: F401  Callable は演習5b で使えます
 
 # ---------------------------------------------------------------------------
 # 構文木（AST）と構文解析器 — 実装済み（構文解析は 3.4 章で詳しく扱います）
@@ -194,7 +194,7 @@ class Program:
 
 
 # ---------------------------------------------------------------------------
-# 演習5（★★★）: Thompson の構成法と、状態集合のシミュレーション
+# 演習5a（★★★）: Thompson の構成法と、状態集合のシミュレーション
 # ---------------------------------------------------------------------------
 
 def compile_nfa(node: Node) -> Program:
@@ -216,7 +216,7 @@ def compile_nfa(node: Node) -> Program:
         Quest(x)    : new("split", out=build(x, nxt), out2=nxt) を返す
     （Russ Cox の記事のように「出口が未接続の断片」をつなぎ合わせる方法でもかまいません）
     """
-    raise NotImplementedError("演習5: compile_nfa を実装してください")
+    raise NotImplementedError("演習5a: compile_nfa を実装してください")
 
 
 class Regex:
@@ -244,21 +244,21 @@ class Regex:
     """
 
     def __init__(self, pattern: str) -> None:
-        raise NotImplementedError("演習5: Regex.__init__ を実装してください")
+        raise NotImplementedError("演習5a: Regex.__init__ を実装してください")
 
     @property
     def state_count(self) -> int:
-        raise NotImplementedError("演習5: Regex.state_count を実装してください")
+        raise NotImplementedError("演習5a: Regex.state_count を実装してください")
 
     def fullmatch(self, text: str) -> bool:
-        raise NotImplementedError("演習5: Regex.fullmatch を実装してください")
+        raise NotImplementedError("演習5a: Regex.fullmatch を実装してください")
 
     def search(self, text: str) -> bool:
-        raise NotImplementedError("演習5: Regex.search を実装してください")
+        raise NotImplementedError("演習5a: Regex.search を実装してください")
 
 
 # ---------------------------------------------------------------------------
-# 演習6（★★☆）: 素朴なバックトラッキング型マッチャ（比較のため）
+# 演習5b（★★☆）: 素朴なバックトラッキング型マッチャ（比較のため）
 # ---------------------------------------------------------------------------
 
 
@@ -291,4 +291,4 @@ def backtrack_fullmatch(pattern: str, text: str, max_steps: int | None = None) -
         Plus(x)   : m(x, i, lambda j: m(Star(x), j, k))
         Quest(x)  : m(x, i, k) or k(i)
     """
-    raise NotImplementedError("演習6: backtrack_fullmatch を実装してください")
+    raise NotImplementedError("演習5b: backtrack_fullmatch を実装してください")

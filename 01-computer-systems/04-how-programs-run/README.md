@@ -41,10 +41,9 @@ flowchart LR
   G["libc.so<br>共有ライブラリ"] -.->|"実行時に結合"| E
 ```
 
-2 つのファイルからなる小さなプログラムで、各段階を見ていきましょう。
+2 つのファイルからなる小さなプログラムで、各段階を見ていきましょう。まず `main.c` です。
 
 ```c
-/* main.c */
 #include <stdio.h>
 
 #define GREETING "Hello"
@@ -61,8 +60,9 @@ int main(void) {
 }
 ```
 
+次に `add.c` です。
+
 ```c
-/* add.c */
 int add(int a, int b) {
     return a + b;
 }
@@ -93,11 +93,7 @@ int main(void) {
 
 ```text
 main:
-        endbr64
-        pushq   %rbx
-        movl    calls(%rip), %eax
-        leal    1(%rax), %ebx
-        movl    %ebx, calls(%rip)
+        ...（前略）
         movl    $1, %esi
         movl    counter(%rip), %edi
         call    add@PLT
@@ -211,7 +207,7 @@ $ ldd hello_static
 
 ### 2.2 共有ライブラリの仕組み
 
-共有ライブラリは、どのプロセスのどの番地に読み込まれても動くように、**位置独立コード（PIC, Position-Independent Code）** で作られます。1.2 章で見た相対位置の分岐がその基礎です。外部の関数の呼び出しは **PLT（Procedure Linkage Table）** という中継地点を経由し、実際の番地は **GOT（Global Offset Table）** という表から読み出します。動的リンカは、プログラムの起動時（または最初の呼び出し時）に GOT へ本当の番地を書き込みます。
+共有ライブラリは、どのプロセスのどの番地に読み込まれても動くように、**位置独立コード（PIC, Position-Independent Code）** で作られます。1.2 章で見た相対位置の分岐がその基礎です。外部の関数の呼び出しは **PLT（Procedure Linkage Table）** という中継地点を経由し、実際の番地は **GOT（Global Offset Table）** という表から読み出します。動的リンカは、プログラムの起動時（または最初の呼び出し時）に GOT へ本当の番地を書き込みます（筆者の環境の実行ファイルは、`readelf -d` で見ると `BIND_NOW` が指定されていて、起動時にすべて解決する設定でした。8.2 節の RELRO と組み合わせるためです）。
 
 同じ共有ライブラリの機械語の部分は、それを使う全プロセスで物理メモリ上の 1 つの写しを共有できます（仕組みは [4.2 仮想メモリ](../../04-operating-systems/02-virtual-memory/README.md)）。これが「共有」ライブラリの名前の由来です。
 
@@ -249,10 +245,7 @@ Linux の実行ファイル・オブジェクトファイル・共有ライブ�
 ```text
 $ readelf -h hello
   Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00
-  Class:                             ELF64
-  Data:                              2's complement, little endian
   Type:                              DYN (Position-Independent Executable file)
-  Machine:                           Advanced Micro Devices X86-64
   Entry point address:               0x1060
 （抜粋）
 ```
@@ -485,21 +478,15 @@ caller:
 
 ### 4.3 再帰とスタックオーバーフロー
 
-同じ `fact` を `-O2` で最適化すると、次のようになります。
+同じ `fact` を `-O2` で最適化すると、ループの本体は次のようになりました（実際の出力の抜粋）。
 
 ```text
-fact:
-        mov     eax, 1
-        cmp     rdi, 1
-        jle     .L1
 .L2:
         mov     rdx, rdi
         sub     rdi, 1
         imul    rax, rdx
         cmp     rdi, 1
         jne     .L2
-.L1:
-        ret
 ```
 
 `call` が消え、**再帰がループに変換されました**。スタックも消費しません。便利ですが、「最適化の有無で、深い再帰が落ちたり落ちなかったりする」ことも意味します。
@@ -508,20 +495,13 @@ fact:
 
 ```c
 #include <stdio.h>
-
 static long depth(long n) {
-    char pad[256];                 /* 1 フレームを大きくする */
+    char pad[256];                     /* 1 フレームを大きくする */
     pad[0] = (char)n;
-    if (n % 10000 == 0) {
-        printf("depth=%ld\n", n);
-        fflush(stdout);
-    }
-    return depth(n + 1) + pad[0];  /* 末尾呼び出しではない再帰 */
+    if (n % 10000 == 0) { printf("depth=%ld\n", n); fflush(stdout); }
+    return depth(n + 1) + pad[0];      /* 末尾呼び出しではない再帰 */
 }
-
-int main(void) {
-    return (int)depth(1);
-}
+int main(void) { return (int)depth(1); }
 ```
 
 ```text
@@ -560,13 +540,7 @@ RecursionError maximum recursion depth exceeded
 
 ## 5. ヒープ
 
-関数から戻った後も残しておきたいデータや、大きさが実行時まで分からないデータは、**ヒープ（heap）** に置きます。C では `malloc` で確保し、`free` で解放します。
-
-```c
-int *a = malloc(n * sizeof(int));   /* n 個の int の領域を確保（失敗すると NULL） */
-/* …… a を使う …… */
-free(a);                            /* 使い終わったら解放する */
-```
+関数から戻った後も残しておきたいデータや、大きさが実行時まで分からないデータは、**ヒープ（heap）** に置きます。C では `malloc(n * sizeof(int))` のように確保し（失敗すると `NULL` が返る）、使い終わったら `free` で解放します。
 
 `malloc` は OS から大きなまとまりでメモリを受け取り（Linux では `brk` や `mmap` というシステムコール。glibc では、おおむね 128 KiB 以上の大きな確保は直接 `mmap` で行う）、それを小さく切り分けて渡します。確保と解放を繰り返すと、空き領域が細かく分断される **断片化（fragmentation）** が起き、空きの合計は十分なのに大きな領域を確保できない、メモリ使用量が減らない、といった問題が生じます。
 
@@ -891,16 +865,7 @@ python3 tools/check.py -v 1.4     # 詳しい出力
 
 </details>
 
-**Q4. 次のものは、プロセスのメモリ配置のどこに置かれますか。(a) 関数の中のローカル変数、(b) `malloc` で確保した領域、(c) 初期値付きのグローバル変数、(d) 初期値のないグローバル変数、(e) 関数の機械語、(f) 文字列リテラル。**
-
-<details>
-<summary>解答</summary>
-
-(a) スタック、(b) ヒープ（大きな確保は mmap の領域になることもある）、(c) .data、(d) .bss（実行ファイルには中身を持たず、読み込み時に 0 で埋めた領域が用意される）、(e) .text、(f) .rodata（読み取り専用）。
-
-</details>
-
-**Q5. x86-64 の Linux で `long f(long a, long b, long c, long d, long e, long f, long g)` を呼ぶとき、各引数はどこに置かれ、戻り値はどこに入りますか。呼ばれた関数の中で 7 番目の引数が `[rsp+8]` にあるのはなぜですか。**
+**Q4. x86-64 の Linux で `long f(long a, long b, long c, long d, long e, long f, long g)` を呼ぶとき、各引数はどこに置かれ、戻り値はどこに入りますか。呼ばれた関数の中で 7 番目の引数が `[rsp+8]` にあるのはなぜですか。**
 
 <details>
 <summary>解答</summary>
@@ -909,7 +874,7 @@ System V AMD64 ABI の呼び出し規約に従い、a〜f は順に `rdi`、`rsi
 
 </details>
 
-**Q6. C で深い再帰を行うと `Segmentation fault` で落ちるのに、Python では `RecursionError` という例外になるのはなぜですか。また、`gcc -O2` で階乗の再帰関数をコンパイルしたらスタックを使わないループになったことは、何を意味しますか。**
+**Q5. C で深い再帰を行うと `Segmentation fault` で落ちるのに、Python では `RecursionError` という例外になるのはなぜですか。また、`gcc -O2` で階乗の再帰関数をコンパイルしたらスタックを使わないループになったことは、何を意味しますか。**
 
 <details>
 <summary>解答</summary>
@@ -920,7 +885,7 @@ C の関数呼び出しは、OS が用意したスタック（Linux のメイン
 
 </details>
 
-**Q7. JIT コンパイルの利点と欠点を説明し、サーバーレスの関数（リクエストのたびに起動することがある）で問題になりやすい理由を述べてください。**
+**Q6. JIT コンパイルの利点と欠点を説明し、サーバーレスの関数（リクエストのたびに起動することがある）で問題になりやすい理由を述べてください。**
 
 <details>
 <summary>解答</summary>
@@ -933,7 +898,7 @@ C の関数呼び出しは、OS が用意したスタック（Linux のメイン
 
 </details>
 
-**Q8. スタックカナリアはどのようにスタックバッファオーバーフローを検出しますか。カナリアだけでは不十分な理由も述べてください。**
+**Q7. スタックカナリアはどのようにスタックバッファオーバーフローを検出しますか。カナリアだけでは不十分な理由も述べてください。**
 
 <details>
 <summary>解答</summary>
