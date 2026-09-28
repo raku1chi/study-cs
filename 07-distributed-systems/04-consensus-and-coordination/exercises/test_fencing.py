@@ -16,7 +16,7 @@ class FakeClock:
         return self.now
 
 
-class TestExercise5LockService(unittest.TestCase):
+class TestExercise6LockService(unittest.TestCase):
     def setUp(self):
         self.clock = FakeClock(1_000)
         self.locks = LockService(lease_ms=10_000, clock=self.clock)
@@ -94,7 +94,7 @@ class TestExercise5LockService(unittest.TestCase):
             LockService(lease_ms=0, clock=self.clock)
 
 
-class TestExercise5FencedStorage(unittest.TestCase):
+class TestExercise6FencedStorage(unittest.TestCase):
     def test_accepts_equal_or_newer_tokens(self):
         s = FencedStorage()
         s.write("k", "v1", token=3)
@@ -109,7 +109,7 @@ class TestExercise5FencedStorage(unittest.TestCase):
         self.assertIsNone(s.read("missing"))
 
 
-class TestExercise5PausedClientScenario(unittest.TestCase):
+class TestExercise6PausedClientScenario(unittest.TestCase):
     """Kleppmann（2016）が示した筋書き: リースを持つクライアントが GC で止まっている間に、リースが失効する。"""
 
     def run_scenario(self, storage):

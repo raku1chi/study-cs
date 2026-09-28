@@ -72,10 +72,16 @@ class TaintTracker:
         self.min_overlap = min_overlap
         self._untrusted: list[tuple[str, str]] = []
         self._trusted_indicators: set[str] = set()
+        self._trusted_grams: set[str] = set()
+
+    def _grams(self, text: str) -> set[str]:
+        n = self.min_overlap
+        return {text[i:i + n] for i in range(len(text) - n + 1)}
 
     def observe(self, text: str, *, source: str, trusted: bool) -> None:
         if trusted:
             self._trusted_indicators |= extract_indicators(text)
+            self._trusted_grams |= self._grams(text)
         else:
             self._untrusted.append((text, source))
 
@@ -88,11 +94,9 @@ class TaintTracker:
         return list(dict.fromkeys(source for _, source in self._untrusted))
 
     def _shares_substring(self, value: str, text: str) -> bool:
-        n = self.min_overlap
-        if len(value) < n or len(text) < n:
-            return False
-        grams = {text[i:i + n] for i in range(len(text) - n + 1)}
-        return any(value[i:i + n] in grams for i in range(len(value) - n + 1))
+        # 長さ min_overlap 以上の共通部分があるか。ただし信頼できる入力にも現れる部分は数えない
+        shared = self._grams(value) & self._grams(text)
+        return bool(shared - self._trusted_grams)
 
     def influenced(self, arguments: dict) -> list[str]:
         reasons: list[str] = []

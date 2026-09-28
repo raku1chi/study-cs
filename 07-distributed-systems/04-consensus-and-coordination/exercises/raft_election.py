@@ -4,10 +4,10 @@ Raft（Ongaro と Ousterhout, 2014）は、理解しやすさを重視して設�
 etcd・Consul・CockroachDB などが採用しています。この演習では、1 ms 刻みの決定的な離散時間
 シミュレータ（RaftCluster, 実装済み）の上で、各ノードの振る舞い（RaftNode のメソッド）を実装します。
 
-    基本（★★★）: 任期（term）、投票、ランダムな選挙タイムアウト、RequestVote の規則
-                  （ログの新しさの検査を含む）、ハートビートによるリーダーの維持
-    発展（★★★）: AppendEntries によるログ複製と、過半数への複製によるコミット
-                  → ENABLE_LOG_REPLICATION = True にすると、発展課題のテストも実行されます
+    演習4 基本（★★★）: 任期（term）、投票、ランダムな選挙タイムアウト、RequestVote の規則
+                       （ログの新しさの検査を含む）、ハートビートによるリーダーの維持
+    演習5 発展（★★★）: AppendEntries によるログ複製と、過半数への複製によるコミット
+                       → ENABLE_LOG_REPLICATION = True にすると、発展課題のテストも実行されます
 
 テストの実行（リポジトリのルートで）:
     python3 tools/check.py 7.4
@@ -183,7 +183,7 @@ class RaftNode:
         self.match_index = {}
         self.reset_election_timer()
 
-    # ---- 演習（基本）: リーダー選出 ----
+    # ---- 演習4（基本）: リーダー選出 ----
 
     def become_follower(self, term: int) -> None:
         """フォロワーになる。
@@ -193,7 +193,7 @@ class RaftNode:
         - **リーダーから降格する場合に限り**、leader_id = None にして reset_election_timer() を呼ぶ
           （リーダーの選挙の締め切りは古いままなので、そのままだと降格した直後に選挙を始めてしまう）。
         """
-        raise NotImplementedError("演習（基本）: become_follower を実装してください")
+        raise NotImplementedError("演習4（基本）: become_follower を実装してください")
 
     def on_tick(self) -> None:
         """シミュレータが 1 ms ごとに呼ぶ。
@@ -201,7 +201,7 @@ class RaftNode:
         - リーダーなら、現在時刻が next_heartbeat 以上のとき send_heartbeats() を呼ぶ。
         - リーダー以外（フォロワー・候補者）なら、現在時刻が election_deadline 以上のとき start_election() を呼ぶ。
         """
-        raise NotImplementedError("演習（基本）: on_tick を実装してください")
+        raise NotImplementedError("演習4（基本）: on_tick を実装してください")
 
     def start_election(self) -> None:
         """選挙を始める（Figure 2 "Candidates"）。
@@ -212,7 +212,7 @@ class RaftNode:
         3. 全ピアに RequestVote(current_term, 自分, last_log_index(), last_log_term()) を送る。
         4. votes がすでに過半数なら（1 台構成）become_leader()。
         """
-        raise NotImplementedError("演習（基本）: start_election を実装してください")
+        raise NotImplementedError("演習4（基本）: start_election を実装してください")
 
     def handle_request_vote(self, msg: RequestVote) -> RequestVoteReply:
         """RequestVote を受け取り、応答を返す（Figure 2 "RequestVote RPC"）。
@@ -230,7 +230,7 @@ class RaftNode:
         考えてみよう: ログの新しさの検査がないと、コミット済みのエントリを持たないノードがリーダーになり、
         そのエントリを消してしまう。なぜ「過半数に複製されたエントリは、次のリーダーのログに必ずある」と言えるのか。
         """
-        raise NotImplementedError("演習（基本）: handle_request_vote を実装してください")
+        raise NotImplementedError("演習4（基本）: handle_request_vote を実装してください")
 
     def handle_request_vote_reply(self, msg: RequestVoteReply) -> None:
         """RequestVote への返事を処理する。
@@ -239,7 +239,7 @@ class RaftNode:
         2. 自分が候補者でない、または msg.term != current_term（古い選挙の返事）なら無視する。
         3. 賛成なら votes に msg.voter_id を加え、過半数に達したら become_leader()。
         """
-        raise NotImplementedError("演習（基本）: handle_request_vote_reply を実装してください")
+        raise NotImplementedError("演習4（基本）: handle_request_vote_reply を実装してください")
 
     def become_leader(self) -> None:
         """リーダーになる。
@@ -248,7 +248,7 @@ class RaftNode:
         そして直ちに send_heartbeats() を呼ぶ（他のノードの選挙を止めるため）。
         注意: 就任時に no-op エントリを追加する最適化（論文 8 節）は、この演習では **行わない** こと。
         """
-        raise NotImplementedError("演習（基本）: become_leader を実装してください")
+        raise NotImplementedError("演習4（基本）: become_leader を実装してください")
 
     def send_heartbeats(self) -> None:
         """全ピアに AppendEntries を送り、next_heartbeat = 現在時刻 + heartbeat_interval にする。
@@ -258,7 +258,7 @@ class RaftNode:
                 AppendEntries(current_term, 自分, prev, term_at(prev), tuple(log[prev:]), commit_index) を送る
                 （足りないエントリをまとめて送る。何もなければ空のハートビートになる）。
         """
-        raise NotImplementedError("演習（基本）: send_heartbeats を実装してください")
+        raise NotImplementedError("演習4（基本）: send_heartbeats を実装してください")
 
     def handle_append_entries(self, msg: AppendEntries) -> AppendEntriesReply:
         """AppendEntries を受け取り、応答を返す（Figure 2 "AppendEntries RPC"）。
@@ -280,7 +280,7 @@ class RaftNode:
            commit_index = max(commit_index, min(msg.leader_commit, match)) にして apply_committed()。
         8. AppendEntriesReply(current_term, True, 自分, match, last_log_index()) を返す。
         """
-        raise NotImplementedError("演習（基本）: handle_append_entries を実装してください")
+        raise NotImplementedError("演習4（基本）: handle_append_entries を実装してください")
 
     def handle_append_entries_reply(self, msg: AppendEntriesReply) -> None:
         """AppendEntries への返事を処理する。
@@ -292,9 +292,9 @@ class RaftNode:
             - 失敗: next_index[f] = max(1, min(next_index[f] - 1, msg.last_log_index + 1))
                     （次のハートビートで、もっと前から送り直す）。
         """
-        raise NotImplementedError("演習（基本）: handle_append_entries_reply を実装してください")
+        raise NotImplementedError("演習4（基本）: handle_append_entries_reply を実装してください")
 
-    # ---- 演習（発展）: ログ複製 ----
+    # ---- 演習5（発展）: ログ複製 ----
 
     def client_request(self, command: object) -> bool:
         """【発展】クライアントからのコマンドを受け付ける。
@@ -303,7 +303,7 @@ class RaftNode:
         advance_commit_index() を呼んで（1 台構成なら即座にコミットされる）True を返す。
         フォロワーへの複製は、次の send_heartbeats() で行われる。
         """
-        raise NotImplementedError("演習（発展）: client_request を実装してください")
+        raise NotImplementedError("演習5（発展）: client_request を実装してください")
 
     def advance_commit_index(self) -> None:
         """【発展】過半数に複製されたエントリまで commit_index を進める。
@@ -315,11 +315,11 @@ class RaftNode:
             - 自分（1）+ match_index[p] >= n であるピアの数 が majority() 以上なら、commit_index = n として
               apply_committed() を呼び、終わる。
         """
-        raise NotImplementedError("演習（発展）: advance_commit_index を実装してください")
+        raise NotImplementedError("演習5（発展）: advance_commit_index を実装してください")
 
     def apply_committed(self) -> None:
         """【発展】last_applied < commit_index の間、last_applied を 1 進めてそのエントリの command を applied に追加する。"""
-        raise NotImplementedError("演習（発展）: apply_committed を実装してください")
+        raise NotImplementedError("演習5（発展）: apply_committed を実装してください")
 
 
 # ---------------------------------------------------------------------------
