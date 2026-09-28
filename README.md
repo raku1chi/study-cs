@@ -65,6 +65,32 @@ flowchart TB
 | [第15部 総仕上げ](15-capstone/README.md) | 実装プロジェクト / 設計プロジェクト / CTOシミュレーション / ケーススタディ集 |
 <!-- END:CURRICULUM -->
 
+## 基本の本棚
+
+各章の「さらに学ぶために」で多くの教材を紹介していますが、その中でも **カリキュラムの背骨になる本** を挙げます。すべてを読む必要はありません。章を学んで「もっと深く知りたい」と感じた部から手に取ってください。
+
+| ステージ | 書籍 | 対応する部 |
+|---|---|---|
+| Stage I | Randal E. Bryant, David R. O'Hallaron "Computer Systems: A Programmer's Perspective"（邦訳『コンピュータ・システム プログラマの視点から』） | 第1・3・4部 |
+| Stage I | Noam Nisan, Shimon Schocken "The Elements of Computing Systems"（邦訳『コンピュータシステムの理論と実装』） | 第1部 |
+| Stage I | 大槻兼資『問題解決力を鍛える!アルゴリズムとデータ構造』 | 第2部 |
+| Stage I | Remzi H. Arpaci-Dusseau, Andrea C. Arpaci-Dusseau "Operating Systems: Three Easy Pieces"（[無料で公開](https://pages.cs.wisc.edu/~remzi/OSTEP/)） | 第4部 |
+| Stage I | Robert Nystrom "Crafting Interpreters"（[無料で公開](https://craftinginterpreters.com/)） | 第3部 |
+| Stage I | James F. Kurose, Keith W. Ross "Computer Networking: A Top-Down Approach" | 第5部 |
+| Stage II | Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』） | 第6・7部 |
+| Stage II | John Ousterhout "A Philosophy of Software Design" | 第8部 |
+| Stage II | Titus Winters ほか "Software Engineering at Google"（邦訳『Google のソフトウェアエンジニアリング』） | 第8部 |
+| Stage II | Mark Richards, Neal Ford "Fundamentals of Software Architecture"（邦訳『ソフトウェアアーキテクチャの基礎』） | 第9部 |
+| Stage II | Betsy Beyer ほか "Site Reliability Engineering"（邦訳『SRE サイトリライアビリティエンジニアリング』） | 第10部 |
+| Stage II | 徳丸浩『体系的に学ぶ 安全なWebアプリケーションの作り方 第2版』 | 第11部 |
+| Stage II | Chip Huyen "Designing Machine Learning Systems"（邦訳『機械学習システムデザイン』） | 第12部 |
+| Stage III | Camille Fournier "The Manager's Path"（邦訳『エンジニアのためのマネジメントキャリアパス』） | 第13部 |
+| Stage III | Matthew Skelton, Manuel Pais "Team Topologies"（邦訳『チームトポロジー』） | 第13部 |
+| Stage III | Nicole Forsgren, Jez Humble, Gene Kim "Accelerate"（邦訳『LeanとDevOpsの科学』） | 第13部 |
+| Stage III | Andrew S. Grove "High Output Management"（邦訳『HIGH OUTPUT MANAGEMENT』） | 第13・14部 |
+| Stage III | 広木大地『エンジニアリング組織論への招待』 | 第13・14部 |
+| Stage III | Richard Rumelt "Good Strategy Bad Strategy"（邦訳『良い戦略、悪い戦略』） | 第14部 |
+
 ## 学習トラック
 
 目的と経験に合わせて、3 つの進め方を用意しています。詳しくは [学習ガイド](00-guide/README.md) を参照してください。
