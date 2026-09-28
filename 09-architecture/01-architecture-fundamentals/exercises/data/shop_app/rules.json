@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "domain": "shop.domain",
+    "application": "shop.application",
+    "adapters": "shop.adapters",
+    "main": "shop.main"
+  },
+  "allowed": {
+    "domain": [],
+    "application": ["domain"],
+    "adapters": ["application", "domain"],
+    "main": ["adapters", "application", "domain"]
+  },
+  "forbidden_external": {
+    "domain": ["sqlite3", "requests", "flask"],
+    "application": ["sqlite3", "requests", "flask"]
+  },
+  "ignore": ["shop"]
+}

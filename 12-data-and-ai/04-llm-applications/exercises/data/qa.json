@@ -1,0 +1,181 @@
+{
+ "_note": "handbook.json に対する質問と、正解の文書 ID（relevant）・模範解答（answer）です。",
+ "items": [
+  {
+   "id": "q01",
+   "question": "コアタイムは何時から何時までですか？",
+   "relevant": [
+    "attendance"
+   ],
+   "answer": "11時から15時まで"
+  },
+  {
+   "id": "q02",
+   "question": "在宅勤務は週に何日まで使えますか？",
+   "relevant": [
+    "remote"
+   ],
+   "answer": "週3日まで"
+  },
+  {
+   "id": "q03",
+   "question": "海外に住む家族のところからリモートワークしてもいいですか？",
+   "relevant": [
+    "remote"
+   ],
+   "answer": "国外からのリモートワークは認められていません"
+  },
+  {
+   "id": "q04",
+   "question": "有給休暇は入社したときに何日もらえますか？",
+   "relevant": [
+    "leave"
+   ],
+   "answer": "10日"
+  },
+  {
+   "id": "q05",
+   "question": "6万円のモニターを買いたいのですが、何か手続きは必要ですか？",
+   "relevant": [
+    "expense"
+   ],
+   "answer": "購入前に部門長の事前承認が必要です"
+  },
+  {
+   "id": "q06",
+   "question": "タクシーを使ってよいのはどんなときですか？",
+   "relevant": [
+    "expense"
+   ],
+   "answer": "22時以降の移動または重い荷物がある場合"
+  },
+  {
+   "id": "q07",
+   "question": "会社のパソコンをなくしてしまいました。どうすればいいですか？",
+   "relevant": [
+    "security"
+   ],
+   "answer": "1時間以内に情報システム部（内線2100）へ報告してください"
+  },
+  {
+   "id": "q08",
+   "question": "パスワードは何文字以上にする必要がありますか？",
+   "relevant": [
+    "security"
+   ],
+   "answer": "12文字以上"
+  },
+  {
+   "id": "q09",
+   "question": "技術書を買ったら会社から補助は出ますか？",
+   "relevant": [
+    "benefits"
+   ],
+   "answer": "年間5万円まで補助されます"
+  },
+  {
+   "id": "q10",
+   "question": "資格試験の受験料は会社が負担してくれますか？",
+   "relevant": [
+    "benefits"
+   ],
+   "answer": "合格した場合は全額負担されます"
+  },
+  {
+   "id": "q11",
+   "question": "評価面談はいつ行われますか？",
+   "relevant": [
+    "evaluation"
+   ],
+   "answer": "4月と10月"
+  },
+  {
+   "id": "q12",
+   "question": "ハラスメントの相談は名前を出さずにできますか？",
+   "relevant": [
+    "harassment"
+   ],
+   "answer": "匿名でも相談できます"
+  },
+  {
+   "id": "q13",
+   "question": "大阪に出張するとき、ホテル代の上限はいくらですか？",
+   "relevant": [
+    "travel"
+   ],
+   "answer": "1泊12,000円"
+  },
+  {
+   "id": "q14",
+   "question": "生成AIに顧客の個人情報を入力してもいいですか？",
+   "relevant": [
+    "ai-policy"
+   ],
+   "answer": "承認されていない生成AIサービスに入力してはいけません"
+  },
+  {
+   "id": "q15",
+   "question": "入社初日は何時にどこへ行けばいいですか？",
+   "relevant": [
+    "onboarding"
+   ],
+   "answer": "9時30分に本社3階の受付"
+  },
+  {
+   "id": "q16",
+   "question": "経費精算の締め切りはいつですか？",
+   "relevant": [
+    "expense"
+   ],
+   "answer": "支払いをした月の翌月10日まで"
+  },
+  {
+   "id": "q17",
+   "question": "夜遅くまで働くときに必要な手続きは？",
+   "relevant": [
+    "attendance"
+   ],
+   "answer": "事前に上長の承認を得て勤怠システムで申請します"
+  },
+  {
+   "id": "q18",
+   "question": "ノートPCが壊れたら誰に連絡すればいいですか？",
+   "relevant": [
+    "devices"
+   ],
+   "answer": "ヘルプデスク（内線2200）"
+  },
+  {
+   "id": "q19",
+   "question": "上司との面談はどのくらいの頻度ですか？",
+   "relevant": [
+    "evaluation"
+   ],
+   "answer": "隔週"
+  },
+  {
+   "id": "q20",
+   "question": "怪しいメールが届いたらどうすればいいですか？",
+   "relevant": [
+    "security"
+   ],
+   "answer": "リンクを開かずにセキュリティ窓口へ転送します"
+  },
+  {
+   "id": "q21",
+   "question": "辞めるときに返さなければならないものはありますか？",
+   "relevant": [
+    "devices"
+   ],
+   "answer": "貸与した機器をすべて返却します"
+  },
+  {
+   "id": "q22",
+   "question": "飛行機で移動するときの座席のクラスに決まりはありますか？",
+   "relevant": [
+    "travel"
+   ],
+   "answer": "原則としてエコノミークラス"
+  }
+ ]
+}

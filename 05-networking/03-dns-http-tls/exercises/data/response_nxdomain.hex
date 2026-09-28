@@ -1,0 +1,27 @@
+# nosuch.example.com の A レコードを問い合わせた応答: 名前が存在しない（NXDOMAIN）
+# 権威セクションの SOA が、この否定応答をキャッシュしてよい時間の根拠になる
+#
+# ヘッダ（オフセット 0〜11）
+0b ad                         # ID
+81 83                         # フラグ: QR=1 RD=1 RA=1 RCODE=3（NXDOMAIN）
+00 01 00 00 00 01 00 00       # 質問 1、回答 0、権威 1、追加 0
+# 質問（オフセット 12）
+06 6e 6f 73 75 63 68          # "nosuch"（オフセット 12）
+07 65 78 61 6d 70 6c 65       # "example"（オフセット 19）
+03 63 6f 6d                   # "com"（オフセット 27）
+00                            # ルート
+00 01 00 01                   # タイプ A、クラス IN
+# 権威（オフセット 36）: example.com SOA
+c0 13                         # 名前: ポインタ → オフセット 19（example.com）
+00 06 00 01                   # タイプ SOA、クラス IN
+00 00 01 2c                   # TTL 300 秒
+00 27                         # RDATA の長さ 39
+03 6e 73 31                   # "ns1"（オフセット 48）← MNAME（プライマリのネームサーバー）の先頭
+c0 13                         # ポインタ → example.com（MNAME = ns1.example.com）
+0a 68 6f 73 74 6d 61 73 74 65 72 # "hostmaster"（オフセット 54）← RNAME の先頭
+c0 13                         # ポインタ → example.com（RNAME = hostmaster.example.com。管理者のメールアドレス hostmaster@example.com を表す）
+78 c3 b9 01                   # シリアル 2026092801
+00 00 1c 20                   # REFRESH 7200
+00 00 0e 10                   # RETRY 3600
+00 12 75 00                   # EXPIRE 1209600
+00 00 01 2c                   # MINIMUM 300（否定応答をキャッシュしてよい時間の上限として使われる）
