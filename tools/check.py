@@ -110,23 +110,30 @@ def resolve_target(target: str) -> Path | None:
     return None
 
 
-def select_chapters(targets: list[str]) -> list[Path]:
+def select_chapters(targets: list[str]) -> tuple[list[Path], bool]:
+    """(テスト対象の章, 対象の指定に誤りがあったか) を返す。"""
     chapters = all_chapters()
     if not targets:
-        return chapters
+        return chapters, False
     selected: list[Path] = []
+    had_error = False
     for t in targets:
         path = resolve_target(t)
         if path is None:
             print(f"⚠️  対象が見つかりません: {t}", file=sys.stderr)
+            had_error = True
             continue
         if path.name in ("exercises", "solutions"):
             path = path.parent
         matched = [c for c in chapters if c == path or path in c.parents]
         if not matched:
-            print(f"⚠️  演習（exercises/test_*.py）がありません: {rel(path)}", file=sys.stderr)
+            if (path / "README.md").exists():
+                print(f"ℹ️  {rel(path)} にはコードの演習がありません（記述演習は本文の「演習」を参照してください）")
+            else:
+                print(f"⚠️  演習（exercises/test_*.py）がありません: {rel(path)}", file=sys.stderr)
+                had_error = True
         selected.extend(m for m in matched if m not in selected)
-    return selected
+    return selected, had_error
 
 
 def prepare_solution_dir(chapter: Path, tmp_root: Path) -> Path:
@@ -261,15 +268,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--list", action="store_true", help="演習のある章を一覧表示する")
     args = parser.parse_args(argv)
 
-    chapters = select_chapters(args.targets)
+    chapters, had_error = select_chapters(args.targets)
     if args.list:
         for c in chapters:
             tests = sorted(p.name for p in (c / "exercises").glob("test_*.py"))
             print(f"{rel(c):55s} {', '.join(tests)}")
         return 0
     if not chapters:
-        print("テスト対象の章がありません。")
-        return 1
+        if had_error:
+            print("テスト対象の章がありません。")
+            return 1
+        return 0
 
     mode = "解答例（solutions/）" if args.solutions else "あなたのコード（exercises/）"
     print(f"対象: {mode} / {len(chapters)}章\n")
