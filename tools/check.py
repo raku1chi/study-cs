@@ -32,6 +32,7 @@ TIMEOUT_SEC = 300
 
 RAN_RE = re.compile(r"^Ran (\d+) tests? in", re.M)
 SUMMARY_RE = re.compile(r"^(OK|FAILED)(?: \((.*)\))?\s*$", re.M)
+FAILED_ID_RE = re.compile(r"^(?:FAIL|ERROR): (\S+ \([^)]*\))", re.M)
 LOAD_ERROR_MARKERS = (
     "unittest.loader._FailedTest",
     "Failed to import test module",
@@ -50,10 +51,12 @@ class Result:
     load_error: bool = False
     timed_out: bool = False
     output: str = ""
+    failed_tests: int | None = None  # 失敗したテストメソッドの数（subTest による重複を除く）
 
     @property
     def passed(self) -> int:
-        return max(self.ran - self.failures - self.errors - self.skipped, 0)
+        failed = self.failed_tests if self.failed_tests is not None else self.failures + self.errors
+        return max(self.ran - failed - self.skipped, 0)
 
     @property
     def counted(self) -> int:
@@ -173,6 +176,10 @@ def parse_output(result: Result, output: str) -> None:
             elif key == "skipped":
                 result.skipped = int(value)
     result.load_error = any(marker in output for marker in LOAD_ERROR_MARKERS)
+    # subTest の失敗は 1 つのテストメソッドにつき複数回数えられるので、テスト ID の重複を除いて数える
+    failed_ids = set(FAILED_ID_RE.findall(output))
+    if failed_ids:
+        result.failed_tests = len(failed_ids)
 
 
 def run_chapter(chapter: Path, use_solutions: bool, verbose: bool) -> Result:
@@ -319,4 +326,8 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except BrokenPipeError:  # 出力を head などにパイプしたとき
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        sys.exit(1)

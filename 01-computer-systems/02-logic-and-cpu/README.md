@@ -611,7 +611,7 @@ flowchart LR
 
 ### 7.5 Spectre と Meltdown — 高速化の仕組みが脆弱性になった
 
-2018 年 1 月、Google の Project Zero と複数の大学の研究者が独立に発見した、投機的実行に関する一連の脆弱性が公表されました。**Spectre** と **Meltdown** です。
+2018 年 1 月、Google の Project Zero と、大学や企業の複数の研究者が、それぞれ独立に発見した投機的実行に関する一連の脆弱性が公表されました。**Spectre** と **Meltdown** です。
 
 Spectre（の最初の変種）の論文で紹介された典型的なコードは、次のような形をしています（簡略化）。
 

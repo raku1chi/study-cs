@@ -129,12 +129,22 @@ def check_links(path: Path, blocks, report: Report) -> None:
 
 def check_details(path: Path, blocks, report: Report) -> None:
     opens = closes = 0
-    for _, line, in_fence, _ in blocks:
+    for idx, (i, line, in_fence, _) in enumerate(blocks):
         if in_fence:
             continue
         text = INLINE_CODE_RE.sub("", line)
         opens += len(re.findall(r"<details\b", text))
         closes += len(re.findall(r"</details>", text))
+        stripped = line.strip()
+        # GitHub では、<summary> の直後と </details> の直前に空行がないと中の Markdown が描画されない
+        if stripped.endswith("</summary>") and idx + 1 < len(blocks):
+            nxt = blocks[idx + 1][1].strip()
+            if nxt and nxt != "</details>":
+                report.error(path, i, "</summary> の次の行は空行にしてください（中の Markdown が描画されません）")
+        if stripped == "</details>" and idx > 0:
+            prev = blocks[idx - 1][1].strip()
+            if prev and not prev.endswith("</summary>"):
+                report.error(path, i, "</details> の前の行は空行にしてください（中の Markdown が描画されません）")
     if opens != closes:
         report.error(path, None, f"<details> の開始({opens})と終了({closes})の数が一致しません")
 
