@@ -40,6 +40,7 @@ class Chapter:
     read_h: float
     exercise_h: float
     has_code: bool
+    has_starter: bool = False
 
     @property
     def hours(self) -> float:
@@ -97,8 +98,9 @@ def load_parts() -> list[Part]:
             else:
                 print(f"警告: 学習時間を読めません: {rel(chap_readme)}", file=sys.stderr)
             has_code = any((chap_dir / "exercises").glob("test_*.py"))
+            has_starter = (chap_dir / "starter").is_dir()
             part.chapters.append(
-                Chapter(f"{m.group(1)}.{m.group(2)}", m.group(3), chap_readme, read_h, exercise_h, has_code)
+                Chapter(f"{m.group(1)}.{m.group(2)}", m.group(3), chap_readme, read_h, exercise_h, has_code, has_starter)
             )
         parts.append(part)
     return parts
@@ -125,7 +127,7 @@ def render_curriculum(parts: list[Part]) -> str:
             link = f"[第{p.number}部 {p.title}]({rel(p.path)})" if p.path.exists() else f"第{p.number}部 {p.title}"
             out += [f"**{link}** — 約 {p.hours:,.0f} 時間", "", "| 章 | タイトル | 学習時間 | 演習 |", "|---|---|---|---|"]
             for c in p.chapters:
-                kind = "コード" if c.has_code else "記述"
+                kind = "コード" if c.has_code else ("プロジェクト（スターター付き）" if c.has_starter else "記述")
                 out.append(
                     f"| {c.number} | [{c.title}]({rel(c.path)}) | "
                     f"{fmt_hours(c.read_h)} ＋ {fmt_hours(c.exercise_h)} | {kind} |"
@@ -163,6 +165,8 @@ def render_progress(parts: list[Part]) -> str:
                 out.append(f"  - [ ] {c.number} 本文とコード例")
                 if c.has_code:
                     out.append(f"  - [ ] {c.number} 演習（`python3 tools/check.py {c.number}`）")
+                elif c.has_starter:
+                    out.append(f"  - [ ] {c.number} プロジェクトの成果物")
                 else:
                     out.append(f"  - [ ] {c.number} 記述演習")
                 out.append(f"  - [ ] {c.number} 理解度チェック")

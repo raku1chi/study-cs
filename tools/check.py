@@ -128,7 +128,7 @@ def select_chapters(targets: list[str]) -> tuple[list[Path], bool]:
         matched = [c for c in chapters if c == path or path in c.parents]
         if not matched:
             if (path / "README.md").exists():
-                print(f"ℹ️  {rel(path)} にはコードの演習がありません（記述演習は本文の「演習」を参照してください）")
+                print(f"ℹ️  {rel(path)} には自動採点の演習（exercises/）はありません。取り組み方は章の本文を参照してください")
             else:
                 print(f"⚠️  演習（exercises/test_*.py）がありません: {rel(path)}", file=sys.stderr)
                 had_error = True
