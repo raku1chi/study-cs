@@ -14,7 +14,12 @@ Policy = Mapping[str, Any]
 
 @dataclass(frozen=True)
 class Request:
-    """評価したいリクエスト（誰が、を除いた「何を・どれに・どんな状況で」）。"""
+    """評価したいリクエスト（誰が、を除いた「何を・どれに・どんな状況で」）。
+
+    - action: "s3:GetObject" のような「サービス:操作」
+    - resource: "arn:aws:s3:::acme-reports/2026/q1.csv" のような ARN
+    - context: 条件キーの値。例 {"aws:SourceIp": "203.0.113.5", "aws:MultiFactorAuthPresent": True}
+    """
 
     action: str
     resource: str
@@ -23,7 +28,14 @@ class Request:
 
 @dataclass(frozen=True)
 class Decision:
-    """評価結果。reason は "allowed" / "explicit_deny" / "scp" / "implicit_deny" / "boundary"。"""
+    """評価結果。
+
+    - allowed: 許可されたか
+    - reason: "allowed" / "explicit_deny" / "scp" / "implicit_deny" / "boundary" のいずれか
+    - matched: 判断の根拠になったステートメントの Sid（Sid がなければ空文字列）。
+      allowed のときは当てはまった Allow の Sid、explicit_deny のときは当てはまった Deny の Sid。
+      それ以外（何も当てはまらなかった）は空のタプル。
+    """
 
     allowed: bool
     reason: str

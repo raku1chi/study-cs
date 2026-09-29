@@ -257,7 +257,7 @@ requests と limits の組み合わせで、Pod の **QoS クラス** が決ま�
 | Burstable | requests か limits が少なくとも 1 つ設定されている（Guaranteed 以外） | requests を超えて使っているものから追い出される |
 | BestEffort | requests も limits もない | 最初に追い出される |
 
-実務では、**メモリは requests = limits にして予測可能にし、CPU は requests を実測に基づいて設定する** のが一般的です。CPU の limits を付けるかどうかは議論があり、遅延に敏感なサービスではスロットリングを避けるために付けない運用もあります（その場合は、同じノードの他の Pod を圧迫しないよう requests を適切に設定することが前提です）。Java（JVM）や Go のようなランタイムは、コンテナのメモリ上限を意識したヒープの設定（JVM の `-XX:MaxRAMPercentage`、Go の `GOMEMLIMIT` など）をしないと、上限の手前で余裕なく動いたり OOMKilled されたりします。
+実務では、**メモリは requests = limits にして予測可能にし、CPU は requests を実測に基づいて設定する** のが一般的です。CPU の limits を付けるかどうかは議論があり、遅延に敏感なサービスではスロットリングを避けるために付けない運用もあります（その場合は、同じノードの他の Pod を圧迫しないよう requests を適切に設定することが前提です）。Java（JVM）や Go のようなランタイムでは、ランタイム側のメモリの設定（JVM のヒープの上限 `-Xmx` や `-XX:MaxRAMPercentage`、Go の `GOMEMLIMIT` など）をコンテナのメモリ上限と整合させる必要があります。ヒープ以外に使うメモリ（スレッドのスタック、ネイティブのメモリなど）を見込まずにヒープを上限近くまで広げると OOMKilled され、逆に小さすぎると与えたメモリを活かせずにガベージコレクションが頻発します。
 
 ### 5.2 スケジューラ: フィルタ → スコア → バインド
 
@@ -410,7 +410,7 @@ for t in range(3, 10):
  9  0(0)       4(4)       4     complete
 ```
 
-どの時点でも合計は 5（= 4 + maxSurge）以下、Ready は 3（= 4 − maxUnavailable）以上に保たれています。t=4 では新しい Pod がまだ Ready でないので、古い Pod を減らしていません。**古い Pod を減らすのは、新しい Pod が Ready になって可用性の余裕ができたときだけ** です。
+どの時点でも合計は 5（= 4 + maxSurge）以下、Ready は 3（= 4 − maxUnavailable）以上に保たれています。t=3 では maxUnavailable の枠（1 つ）を使って古い Pod を 1 つ減らしましたが、t=4 では新しい Pod がまだ Ready でないので、それ以上は減らしていません。**古い Pod を減らせるのは、Ready な Pod の数が replicas − maxUnavailable を下回らない範囲だけ** です。新しい Pod が Ready になるたびに、その分だけ古い Pod を減らせるようになります。
 
 この性質が、壊れたイメージをデプロイしたときに効きます。新しい Pod が永遠に Ready にならないと、ロールアウトは「旧 3 + 新 2（Ready でない）」の状態で止まり、サービスは 3 つの旧 Pod で動き続けます（演習のテスト `test_broken_revision_stalls_without_losing_capacity`）。Kubernetes は一定時間（`progressDeadlineSeconds`、既定 600 秒）進捗がないとロールアウトを「失敗（ProgressDeadlineExceeded）」と記録しますが、**自動でロールバックはしません**。CD パイプラインがこの状態を検知して `kubectl rollout undo` するか、Argo Rollouts のようなツールで指標に基づく自動ロールバックを組み込みます（→ [8.4](../../08-software-engineering/04-ci-cd-and-release/README.md) のプログレッシブデリバリー）。
 

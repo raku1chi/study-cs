@@ -111,7 +111,7 @@ def overall_rating(
         4. red_flag=True かつ confidence >= red_flag_min_confidence の所見があれば、
            score に関係なく "RED"。reasons に "red_flag:<id>" を追加（所見の入力順）。
         5. red_flag=True だが confidence が red_flag_min_confidence 未満の所見は
-           "unconfirmed_red_flag:<id>" を reasons に追加し、"GREEN" なら "AMBER" に下げる。
+           "unconfirmed_red_flag:<id>" を reasons に追加し（所見の入力順）、"GREEN" なら "AMBER" に下げる。
         6. coverage < min_coverage なら "low_coverage" を reasons に追加し、
            "GREEN" なら "AMBER" に下げる。
         reasons の並びは「4 のすべて → 5 のすべて → 6」の順。該当がなければ空のタプル。

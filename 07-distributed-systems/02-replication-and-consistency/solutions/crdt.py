@@ -71,9 +71,6 @@ class PNCounter:
     def value(self) -> int:
         return self._p.value - self._n.value
 
-    def state(self) -> tuple[dict[str, int], dict[str, int]]:
-        return self._p.state(), self._n.state()
-
     def merge(self, other: PNCounter) -> PNCounter:
         result = PNCounter(self.replica_id)
         result._p = self._p.merge(other._p)

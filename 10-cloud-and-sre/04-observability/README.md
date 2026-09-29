@@ -167,10 +167,10 @@ Prometheus（SoundCloud で生まれ、CNCF で開発されている監視シス
 
 ```text
 # 公開される形式（テキスト形式の例）
-http_requests_total{method="GET", route="/api/items/{id}", status="200"} 40211
-http_requests_total{method="POST", route="/api/checkout", status="503"} 8
-http_request_duration_seconds_bucket{route="/api/checkout", le="0.25"} 61
-http_request_duration_seconds_bucket{route="/api/checkout", le="+Inf"} 96
+http_requests_total{method="GET",route="/api/items/{id}",status="200"} 40211
+http_requests_total{method="POST",route="/api/checkout",status="503"} 8
+http_request_duration_seconds_bucket{route="/api/checkout",le="0.25"} 61
+http_request_duration_seconds_bucket{route="/api/checkout",le="+Inf"} 96
 ```
 
 問い合わせ言語 PromQL の基本形をいくつか示します（クエリの例です）。

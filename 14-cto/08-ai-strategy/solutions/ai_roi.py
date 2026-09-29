@@ -75,7 +75,7 @@ def _check_field(name: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 演習1: 1件あたりのモデル利用料
+# 演習2: 1件あたりのモデル利用料と月次の損益
 # ---------------------------------------------------------------------------
 
 def cost_per_request(m: AIFeatureModel) -> float:
@@ -83,10 +83,6 @@ def cost_per_request(m: AIFeatureModel) -> float:
     per_call = (m.input_tokens * m.price_in_per_mtok + m.output_tokens * m.price_out_per_mtok) / TOKENS_PER_UNIT
     return m.calls_per_request * per_call
 
-
-# ---------------------------------------------------------------------------
-# 演習2: 月次の損益
-# ---------------------------------------------------------------------------
 
 def monthly_result(m: AIFeatureModel) -> MonthlyResult:
     _validate(m)
