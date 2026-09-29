@@ -118,7 +118,7 @@ def customers_without_orders_sql() -> str:
 def leaf_categories_sql() -> str:
     # 素朴な書き方: WHERE category_id NOT IN (SELECT parent_id FROM categories)
     # parent_id には最上位カテゴリの NULL が含まれるため、x NOT IN (..., NULL) は
-    # 「x <> ... AND x <> NULL」＝ TRUE か UNKNOWN にしかならず、1 行も返らない。
+    # 「x <> ... AND x <> NULL」＝ FALSE か UNKNOWN にしかならず（TRUE にはならない）、1 行も返らない。
     # NOT EXISTS は NULL の影響を受けない（相関サブクエリが 0 行かどうかだけを見る）。
     return """
         SELECT c.category_id, c.name

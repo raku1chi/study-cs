@@ -92,7 +92,7 @@ def top_customers_sql() -> str:
 
     列: customer_id, name, revenue（その顧客の売上の合計）
     並び: revenue の降順、同額なら customer_id の昇順。上位 :n 行だけ（LIMIT）。
-    売上のない顧客は含めなくてよい。
+    売上のない顧客（キャンセル以外の注文がない顧客）は含めない（:n が顧客数より大きくても）。
 
     実行例: conn.execute(top_customers_sql(), {"n": 3})
     （このデータでは 鈴木 一郎 39900、伊藤 さくら 20300、高橋 美咲 20100）

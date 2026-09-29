@@ -206,6 +206,13 @@ class TestInvariants(unittest.TestCase):
 class TestDeleteBonus(unittest.TestCase):
     """発展課題: delete。未実装（NotImplementedError）ならスキップする。"""
 
+    def setUp(self):
+        # insert などが未実装の段階でも、delete が未実装なら（失敗ではなく）スキップと数える
+        try:
+            BPlusTree(4).delete(0)  # 空の木からの削除は False を返すだけのはず
+        except NotImplementedError:
+            self.skipTest("発展課題（delete）は未実装")
+
     def delete_or_skip(self, tree, key):
         try:
             return tree.delete(key)
