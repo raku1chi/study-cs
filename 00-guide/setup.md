@@ -15,6 +15,8 @@
 | `dig`・`curl`・`openssl` | 任意 | 第 5 部でネットワークを観察する |
 | Docker | 任意 | 第 4 部・第 10 部のコンテナの実習 |
 
+Python 3.10 へのセキュリティ修正の提供は 2026 年 10 月で終わります（PEP 619）。演習は 3.10 でも動くように作っていますが、これから入れるなら最新の安定版を使ってください（教材の自動検証は 3.10 と 3.13 で行っています）。
+
 **OS は macOS・Linux・Windows（WSL2）のいずれか** を推奨します。第 4 部の演習の一部は `os.fork` やシグナルなど Unix の機能を使うため、Windows で直接実行するとスキップされます。
 
 ## 2. OS 別の準備
@@ -53,8 +55,8 @@ wsl --install
 複数のバージョンの Python を使い分けたい場合は、[uv](https://docs.astral.sh/uv/) などのツールが便利です。
 
 ```bash
-uv python install 3.12
-uv run --python 3.12 python tools/check.py 1.1
+uv python install 3.13
+uv run --python 3.13 python tools/check.py 1.1
 ```
 
 ## 3. リポジトリを準備する
