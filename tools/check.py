@@ -34,11 +34,11 @@ TIMEOUT_SEC = 300
 RAN_RE = re.compile(r"^Ran (\d+) tests? in", re.M)
 SUMMARY_RE = re.compile(r"^(OK|FAILED)(?: \((.*)\))?\s*$", re.M)
 FAILED_ID_RE = re.compile(r"^(?:FAIL|ERROR): (\S+ \([^)]*\))", re.M)
+# テストモジュール（または演習ファイル）の import に失敗したときだけに現れる文字列。
+# 構文エラーもここに含まれる。普通のテストの失敗メッセージに含まれる "SyntaxError" などには反応しない。
 LOAD_ERROR_MARKERS = (
     "unittest.loader._FailedTest",
     "Failed to import test module",
-    "SyntaxError",
-    "IndentationError",
 )
 
 
