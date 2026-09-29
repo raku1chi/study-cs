@@ -1,0 +1,50 @@
+# 教材の検証: 解答例のテスト・スタブの読み込み・体裁・章一覧を確認する
+#
+# 補足: サードパーティのアクションは、本来コミット SHA で固定するのが安全です
+# （8.4 CI/CD と 11.5 サプライチェーンを参照）。ここでは読みやすさのため、
+# GitHub 公式のアクションをメジャーバージョンのタグで指定しています。
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 解答例で全演習のテストを実行
+        run: python tools/check.py --solutions
+
+      - name: スタブ（学習者用ファイル）が読み込めることを確認
+        run: |
+          python tools/check.py > stubs.txt || true
+          if grep -q "⚠️" stubs.txt; then cat stubs.txt; exit 1; fi
+
+      - name: 15.1 のスターターのテスト
+        working-directory: 15-capstone/01-engineering-capstone
+        run: python -m unittest discover -s starter
+
+      - name: 教材の体裁チェック
+        run: python tools/lint_content.py
+
+      - name: 章一覧と進捗表が最新か確認
+        run: python tools/build_index.py --check
