@@ -305,7 +305,8 @@ def ndcg_at_k(ranked: Sequence[str], relevant: Sequence[str], k: int) -> float:
 
 
 def evaluate_retrieval(retriever: Retriever, items: Sequence[QAItem], *, k: int = 3, method: str = "hybrid") -> dict[str, float]:
-    """各質問で search_documents（全文書を順位付け）を行い、平均の指標を返す。
+    """各質問で search_documents(質問, k=チャンクの総数, method=method) を呼んで文書を順位付けし
+    （k 件で打ち切らない。MRR は k 位より後に現れた正解も数えるため）、平均の指標を返す。
 
     戻り値のキーは f"recall@{k}"、"mrr"、f"ndcg@{k}"。items が空なら ValueError。
     """

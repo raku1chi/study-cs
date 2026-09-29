@@ -54,7 +54,8 @@ def check_resource(resource: Resource, policy: TagPolicy) -> list[str]:
 
     - キーがない、または値が空白だけ: "missing:{キー}"。
       大文字・小文字だけが違うキーがあれば（例: "Team"）、修正の手がかりとして
-      "missing:team (found Team)" のように付け加える（タグのキーは大文字・小文字を区別する）。
+      "missing:team (found Team)" のように付け加える（この演習では AWS と同じく、タグのキーは
+      大文字・小文字を区別する）。
     - 値が許される値の集合にない: "invalid:{キー}={値}"（集合が None なら空でない任意の値でよい）。
     - 規約にないタグが付いていても問題にしない。
     """

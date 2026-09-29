@@ -214,7 +214,7 @@ spec:
     targetPort: 8080
 ```
 
-外部からの HTTP の振り分けには、長く Ingress が使われてきましたが、機能の拡張は **Gateway API**（2023 年に v1.0）で進められています。Gateway API は、インフラ担当が管理する Gateway と、アプリ担当が管理する HTTPRoute のように、役割ごとにリソースを分けているのが特徴です。
+外部からの HTTP の振り分けには、長く Ingress が使われてきましたが、機能の拡張は **Gateway API**（2023 年に v1.0）で進められています。Gateway API は、インフラ担当が管理する Gateway と、アプリ担当が管理する HTTPRoute のように、役割ごとにリソースを分けているのが特徴です。なお、Ingress の API 自体は引き続き使えますが、広く使われてきた実装の一つである Kubernetes コミュニティの Ingress NGINX コントローラは 2026 年 3 月に保守を終了し、以後は脆弱性の修正も提供されません（2026 年時点）。既存のクラスタでは、どのコントローラで Ingress を動かしているかを確認し、移行を計画する必要があります。
 
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1
@@ -257,6 +257,8 @@ requests と limits の組み合わせで、Pod の **QoS クラス** が決ま�
 | Burstable | requests か limits が少なくとも 1 つ設定されている（Guaranteed 以外） | requests を超えて使っているものから追い出される |
 | BestEffort | requests も limits もない | 最初に追い出される |
 
+右の列は目安です（簡略化しています）。kubelet が追い出す Pod を選ぶ基準は、QoS クラスそのものではなく「使用量が requests を超えているか」→「Pod の優先度（PriorityClass）」→「requests からの超過量」の順です。BestEffort は requests が 0 なので常に超過している側に入り、Guaranteed は requests を超えて使えないので最後の側に入る、という結果としてこの順序になりやすいのです。kubelet が追い出す前にノードのメモリが尽きた場合は、カーネルの OOM キラーが、QoS クラスに応じて設定された優先度（BestEffort が最も殺されやすい）でプロセスを強制終了します。
+
 実務では、**メモリは requests = limits にして予測可能にし、CPU は requests を実測に基づいて設定する** のが一般的です。CPU の limits を付けるかどうかは議論があり、遅延に敏感なサービスではスロットリングを避けるために付けない運用もあります（その場合は、同じノードの他の Pod を圧迫しないよう requests を適切に設定することが前提です）。Java（JVM）や Go のようなランタイムでは、ランタイム側のメモリの設定（JVM のヒープの上限 `-Xmx` や `-XX:MaxRAMPercentage`、Go の `GOMEMLIMIT` など）をコンテナのメモリ上限と整合させる必要があります。ヒープ以外に使うメモリ（スレッドのスタック、ネイティブのメモリなど）を見込まずにヒープを上限近くまで広げると OOMKilled され、逆に小さすぎると与えたメモリを活かせずにガベージコレクションが頻発します。
 
 ### 5.2 スケジューラ: フィルタ → スコア → バインド
@@ -269,7 +271,7 @@ kube-scheduler は、未割り当ての Pod ごとに次の 3 段階を実行し
 
 **taint と toleration** は「このノードには基本的に置かないで」という印とその例外です。GPU ノードに `dedicated=gpu:NoSchedule` という taint を付けておけば、その taint を許容する（toleration を持つ）機械学習の Pod だけが置かれます。`PreferNoSchedule` は「なるべく避ける」、`NoExecute` は「すでに動いている Pod も追い出す」という意味です。
 
-置けるノードがないと Pod は Pending のままになり、イベントに理由が記録されます。演習 2 のスケジューラは、このメッセージの形式も再現しています。
+置けるノードがないと Pod は Pending のままになり、イベントに理由が記録されます。演習 2 のスケジューラは、このメッセージの形式もまねています（理由の並び順などは簡略化しています）。
 
 ```python
 from kube_scheduler import Node, PodSpec, Taint, schedule
@@ -541,7 +543,7 @@ Kubernetes を採用すると、アップグレード、アドオン（CNI・Ing
 
 ## よくある落とし穴
 
-1. **requests を設定しない、または実測とかけ離れた値にする**。requests がなければ BestEffort になり、ノードの資源が足りなくなると真っ先に追い出される。過大なら費用の無駄、過小なら詰め込みすぎによる不安定化を招く。実測（p95 など）に基づいて設定し、定期的に見直す。
+1. **requests を設定しない、または実測とかけ離れた値にする**。requests も limits もなければ BestEffort になり、ノードの資源が足りなくなると真っ先に追い出される（limits だけを書くと、requests は limits と同じ値とみなされる）。過大なら費用の無駄、過小なら詰め込みすぎによる不安定化を招く。実測（p95 など）に基づいて設定し、定期的に見直す。
 2. **liveness probe で依存先を確かめる**。依存先の一時的な遅延が全 Pod の一斉再起動に変わる。liveness はプロセス自身の健全性だけ、依存先の状態は readiness で扱い、起動の遅いアプリには startup probe を使う。
 3. **`latest` のような可変のタグでイメージを指定する**。どのバージョンが動いているか分からず、ノードごとに違うイメージが動くこともあり、ロールバックもできない。不変のタグ（バージョン番号）かダイジェスト（`@sha256:...`）で指定する。
 4. **グレースフルシャットダウンを実装しない**。デプロイやスケールインのたびに少数の 5xx が出る。SIGTERM を受けたら数秒は受け付け続け、処理中のリクエストを終えてから終了する。
@@ -671,7 +673,7 @@ spec:
 
 メモリの limits を超えるとコンテナは OOMKilled（強制終了）され、再起動されます。CPU の limits を超えても終了はせず、スロットリング（一定期間ごとに実行を止められる）によって処理が遅くなります。メモリは「取り上げられない」資源、CPU は「時間で分け合える」資源だからです。
 
-ノードのメモリ不足では、まず BestEffort（requests も limits もない）、次に requests を超えて使っている Burstable の Pod が追い出され、Guaranteed（requests = limits）は最後まで守られます。
+ノードのメモリ不足では、使用量が requests を超えている Pod、つまり BestEffort（requests も limits もない）と、requests を超えて使っている Burstable の Pod が先に追い出されます（その中では優先度の低いもの、超過の大きいものから）。Guaranteed（requests = limits）と、使用量が requests 以内の Burstable の Pod は最後に回されます。kubelet は QoS クラスそのものではなく「requests を超えているか・優先度・超過量」で順序を決めますが、結果としておおむね BestEffort → Burstable → Guaranteed の順になります。
 
 </details>
 
@@ -741,7 +743,7 @@ maxSurge は切り上げで ⌈2.5⌉ = 3、maxUnavailable は切り捨てで �
 ## さらに学ぶために
 
 - Kubernetes 公式ドキュメントの「Concepts」の章 — アーキテクチャ・ワークロード・サービス・ストレージ・セキュリティの一次資料。本章の用語の正確な定義はここで確認する。
-- Brendan Burns, Joe Beda, Kelsey Hightower, Lachlan Evenson "Kubernetes: Up and Running"（O'Reilly）— Kubernetes の創始者たちによる入門書。リソースの使い方を設計思想とともに学べる。
+- Brendan Burns, Joe Beda, Kelsey Hightower, Lachlan Evenson "Kubernetes: Up and Running"（O'Reilly）— Kubernetes の共同創始者（Burns、Beda）らによる入門書。リソースの使い方を設計思想とともに学べる。
 - 青山真也『Kubernetes 完全ガイド』（インプレス）— 日本語で主要リソースを網羅的に解説した定番書。マニフェストの書き方を調べるときの辞書としても使える。
 - Abhishek Verma ほか "Large-scale cluster management at Google with Borg"（EuroSys 2015）と Brendan Burns ほか "Borg, Omega, and Kubernetes"（ACM Queue, 2016）— Kubernetes の設計の源流。調整ループやラベルの設計がなぜ選ばれたのかが分かる。
 - Kelsey Hightower "Kubernetes The Hard Way"（GitHub で公開）— 自動化ツールを使わずにクラスタを 1 つずつ組み立てる教材。構成要素の関係が体感できる。
@@ -752,7 +754,7 @@ maxSurge は切り上げで ⌈2.5⌉ = 3、maxUnavailable は切り捨てで �
 
 - Kubernetes は、配置・自己修復・スケーリング・サービス発見・ローリングアップデートを、**宣言的 API と調整ループ** という一つの考え方で解く。どの構成要素も API サーバーを watch し、自分の担当の差分を埋めるだけ。
 - コントローラは **レベルトリガー** で冪等に作るので、イベントの取りこぼしや再起動があっても収束する。Deployment は ReplicaSet の目標数を調整することで、ローリングアップデートとロールバックを実現する。
-- **requests はスケジューリングと費用を、limits は実行時の強制を決める**。メモリ超過は OOMKilled、CPU 超過はスロットリング。QoS クラスが追い出しの順序を決める。
+- **requests はスケジューリングと費用を、limits は実行時の強制を決める**。メモリ超過は OOMKilled、CPU 超過はスロットリング。QoS クラスは、資源が足りないときの追い出されやすさの目安になる。
 - probe は役割で使い分ける: **liveness は自分自身だけ、依存先は readiness、起動は startup**。誤用は再起動の嵐を生む。
 - ローリングアップデートは maxSurge（切り上げ）と maxUnavailable（切り捨て）の範囲で進み、壊れた版では可用性を保ったまま止まる。自動ロールバックはないので CD で検知する。PDB は自発的な中断だけを制限する。
 - スケジューラはフィルタ → スコア → バインドで配置を決め、Pending の理由はイベントに残る。分散か詰め込みかは可用性と費用のトレードオフ。

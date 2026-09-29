@@ -204,7 +204,10 @@ def _parse_rdata(message: bytes, rtype: int, start: int, rdlength: int) -> objec
         if rdlength < 2 or rdlength < 2 + rdata[1]:
             raise DNSFormatError("CAA レコードが短すぎます")
         flags, tag_len = rdata[0], rdata[1]
-        tag = rdata[2 : 2 + tag_len].decode("ascii")
+        try:
+            tag = rdata[2 : 2 + tag_len].decode("ascii")
+        except UnicodeDecodeError:
+            raise DNSFormatError("CAA のタグは ASCII です") from None
         return flags, tag, bytes(rdata[2 + tag_len :])
     return bytes(rdata)  # それ以外（OPT など）は生のバイト列のまま
 

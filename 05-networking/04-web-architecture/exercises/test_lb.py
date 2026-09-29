@@ -122,7 +122,7 @@ class TestPowerOfTwoChoices(unittest.TestCase):
             lb = LoadBalancer([Backend(f"s{i}") for i in range(50)], strategy)
             for _ in range(5000):
                 lb.acquire()
-            counts = [b.active_connections for b in lb.backends]
+            counts = [lb.backend(f"s{i}").active_connections for i in range(50)]
             return max(counts) - min(counts)
 
         class RandomChoice:

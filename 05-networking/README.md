@@ -85,7 +85,7 @@ flowchart LR
 
 ## 次に進む
 
-- [第6部 データベース](../06-databases/README.md) では、アプリケーションとデータベースの間の通信（コネクションプール、往復の回数、タイムアウト）が性能と障害の要になります。5.2 の接続の管理の知識がそのまま活きます。
+- [第6部 データベース](../06-databases/README.md) では、アプリケーションとデータベースの間の往復の回数（N+1 問題など）や、長いトランザクション・ロック待ちのタイムアウトが、性能と障害の要になります。5.2 の往復の計算とタイムアウトの考え方がそのまま活きます。コネクションプールの大きさの見積もりは [9.5 スケーラビリティとパフォーマンス](../09-architecture/05-scalability-and-performance/README.md) で扱います。
 - [第7部 分散システム](../07-distributed-systems/README.md) は、この部の直接の続きです。「ネットワークは信頼できない」という前提（パケットの損失・遅延・分断）から、[7.1 分散システムの本質](../07-distributed-systems/01-fundamentals/README.md) でタイムアウトと故障の検出を、[7.3 パーティショニング](../07-distributed-systems/03-partitioning/README.md) で一貫性ハッシュによる振り分けを学びます。
 - [第9部 アーキテクチャとシステム設計](../09-architecture/README.md) の [9.4 API設計](../09-architecture/04-api-design/README.md) と [9.5 スケーラビリティとパフォーマンス](../09-architecture/05-scalability-and-performance/README.md) では、5.4 の通信方式・キャッシュ・ロードバランシングを設計の判断として使います。
 - [第10部 クラウドとSRE](../10-cloud-and-sre/README.md) では、5.1 の VPC を IaC で構築し（10.1）、5.4 のヘルスチェック・タイムアウト・リトライを信頼性の設計（10.3）と観測（10.4）につなげます。ネットワークの料金は [10.6 クラウドコスト管理（FinOps）](../10-cloud-and-sre/06-finops/README.md) で扱います。

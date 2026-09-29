@@ -76,6 +76,7 @@ class TestExercise3Dates(unittest.TestCase):
             "2026/13/01": "13 月",
             "": "空",
             "明日": "日付でない",
+            "٢٠٢٦٠٣١٥": "ASCII 以外の数字（アラビア・インド数字）",
         }
         for text, why in invalid.items():
             with self.assertRaises(InvalidValueError, msg=f"{text!r}: {why}"):
@@ -89,7 +90,7 @@ class TestExercise3OtherFields(unittest.TestCase):
         self.assertEqual(parse_legacy_time("０９００"), timedelta(hours=9))
         self.assertEqual(parse_legacy_time("2530"), timedelta(hours=25, minutes=30), "30 時間制")
         self.assertEqual(parse_legacy_time("2959"), timedelta(hours=29, minutes=59))
-        for bad in ("3000", "1860", "930", "12", "ab:cd", "", "18-30"):
+        for bad in ("3000", "1860", "930", "12", "ab:cd", "", "18-30", "١٨٣٠"):
             with self.assertRaises(InvalidValueError, msg=repr(bad)):
                 parse_legacy_time(bad)
 
@@ -99,7 +100,7 @@ class TestExercise3OtherFields(unittest.TestCase):
         self.assertEqual(parse_phone("03 1234 5678"), "0312345678")
         self.assertIsNone(parse_phone(""))
         self.assertIsNone(parse_phone("  "))
-        for bad in ("12345", "90-1234-5678", "090-1234-56789", "tel:0312345678"):
+        for bad in ("12345", "90-1234-5678", "090-1234-56789", "tel:0312345678", "0٩٠١٢٣٤٥٦٧٨"):
             with self.assertRaises(InvalidValueError, msg=repr(bad)):
                 parse_phone(bad)
 

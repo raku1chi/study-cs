@@ -15,11 +15,8 @@ http11.py の parse_request と serialize_response を使って、スレッド�
     - http.server・socketserver は使わず、socket と threading で実装してください。
     - テストは 127.0.0.1 の空いているポート（port=0）で起動し、http.client でアクセスします。
 
-動かしてみる（演習を解いた後で。Ctrl+C で止める）:
-    python3 -c "
-    from mini_http_server import *
-    r = Router(); r.add('GET', '/', lambda req: text_response(200, 'hello\\n'))
-    s = MiniHTTPServer(r, port=8080); s.start(); input('Enter で終了')"
+動かしてみる（演習を解いた後で、このディレクトリで実行する。Enter で終了）:
+    python3 -c "from mini_http_server import *; r = Router(); r.add('GET', '/', lambda req: text_response(200, 'hello\\n')); s = MiniHTTPServer(r, port=8080); s.start(); input('Enter で終了'); s.stop()"
     curl -v http://127.0.0.1:8080/        # 別の端末から
 """
 from __future__ import annotations

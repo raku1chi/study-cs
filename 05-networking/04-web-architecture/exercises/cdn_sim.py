@@ -116,6 +116,7 @@ class CDNCache:
         normalize_accept_encoding=True なら Accept-Encoding は、カンマで区切ったトークン（";" 以降の
         q 値を除き、小文字）に "br" があれば "br"、なければ "gzip" があれば "gzip"、どちらもなければ
         "identity" にまとめる（書き方の違いでキャッシュが細切れになるのを防ぐ）。
+        簡略化のため q 値は無視する（本物の実装では、"br;q=0" のように q=0 で拒否された方式は選ばない）。
 
     purge(url): そのキャッシュキーに保存されたすべての応答を消し、消した数を返す。
     purge_prefix(prefix): キャッシュキーが prefix で始まるすべての応答を消し、消した数を返す。

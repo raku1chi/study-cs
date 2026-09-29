@@ -187,8 +187,9 @@ def schedule(pod: PodSpec, nodes: list[Node], strategy: str = "LeastAllocated") 
 def preempt(pod: PodSpec, nodes: list[Node]) -> tuple[str, list[str]] | None:
     """優先度の低い Pod を追い出して pod の置き場所を作る。作れなければ None（何も変更しない）。
 
-    1. 候補ノード: filter_node の理由が「Insufficient ...」だけのノード（taint や nodeSelector が理由の
-       ノードは、誰を追い出しても置けない）。
+    1. 候補ノード: filter_node の理由が 1 つ以上あり、そのすべてが「Insufficient ...」のノード
+       （taint や nodeSelector が理由のノードは、誰を追い出しても置けない。理由が空のノード、つまり
+       そのままで置けるノードも候補にしない。preempt は schedule が失敗した後に呼ぶ想定）。
     2. 各候補ノードで、pod.priority より優先度が「低い」Pod（同じ優先度は対象外）を全部どけても
        pod が入らなければ、そのノードは候補外。
     3. 入るなら、どけた Pod を優先度の高い順（同じなら名前の昇順）に 1 つずつ「戻せるか」試し、

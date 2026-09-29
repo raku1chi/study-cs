@@ -550,7 +550,7 @@ CI の段階では、ポリシーをコードで検査する（policy as code）
 
 ### 7.5 クラウド回帰（リパトリエーション）の議論
 
-クラウドから自社運用（オンプレミスやコロケーション）へ戻す動きは **リパトリエーション（repatriation）** と呼ばれます。2021 年に米国の投資会社 a16z の Sarah Wang と Martin Casado が発表した論考 "The Cost of Cloud, a Trillion Dollar Paradox" は、成長した大規模なソフトウェア企業ではクラウドの費用が利益率を大きく圧迫しうると論じ、議論を呼びました。また、Basecamp や HEY を提供する 37signals は、2022 年にパブリッククラウドからの撤退を表明し、2023 年にアプリケーションの計算資源を自社所有のサーバーへ移し、2025 年にはオブジェクトストレージ（S3）のデータも自社のストレージへ移したと公表しています。同社は大幅なコスト削減を見込むと述べていますが、これは移行した当事者自身の試算です。
+クラウドから自社運用（オンプレミスやコロケーション）へ戻す動きは **リパトリエーション（repatriation）** と呼ばれます。2021 年に米国の投資会社 a16z の Sarah Wang と Martin Casado が発表した論考 "The Cost of Cloud, a Trillion Dollar Paradox" は、成長した大規模なソフトウェア企業ではクラウドの費用が利益率を大きく圧迫しうると論じ、議論を呼びました。また、Basecamp や HEY を提供する 37signals は、2022 年にパブリッククラウドからの撤退を表明し、2023 年にアプリケーションの計算資源を自社所有のサーバーへ移したと公表しました。2025 年にはオブジェクトストレージ（S3）のデータの移行にも着手し、同年中に AWS から完全に撤退する計画だと報じられています。同社は大幅なコスト削減を見込むと述べていますが、これは移行した当事者自身の試算です。
 
 この議論から学ぶべきことは、「クラウドは高い」「クラウドが正解」のどちらでもなく、**ワークロードの性質と組織の能力で答えが変わる** ということです。
 
@@ -760,7 +760,7 @@ ISMAP（政府情報システムのためのセキュリティ評価制度）は
 ## さらに学ぶために
 
 - NIST SP 800-145 "The NIST Definition of Cloud Computing"（2011）— クラウドの特徴・サービスモデル・配置モデルの定義の出発点。数ページで読める。
-- AWS Well-Architected Framework（および Google Cloud の Architecture Framework、Azure Well-Architected Framework）— 信頼性・セキュリティ・コストなどの観点から設計を点検するための、各社の公式な設計指針。レビューのチェックリストとして使える。
+- AWS Well-Architected Framework（および Google Cloud Well-Architected Framework〈旧 Architecture Framework〉、Azure Well-Architected Framework）— 信頼性・セキュリティ・コストなどの観点から設計を点検するための、各社の公式な設計指針。レビューのチェックリストとして使える。
 - AWS IAM ユーザーガイドの「ポリシーの評価ロジック」の章 — 演習 2 の元になった評価の流れの一次資料。リソースベースポリシーやアカウント間アクセスを含む完全な規則はここで確認する。
 - AWS ホワイトペーパー "Organizing Your AWS Environment Using Multiple Accounts" — OU の設計、SCP、アカウントの分け方の考え方を体系的に解説している。
 - Kief Morris "Infrastructure as Code"（O'Reilly）— 特定のツールに依存しない、IaC の原則とパターン（環境の分離、state の分割、テスト）の定番書。

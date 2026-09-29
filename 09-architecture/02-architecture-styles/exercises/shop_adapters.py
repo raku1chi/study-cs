@@ -198,6 +198,9 @@ class SqliteOrderRepository:
       更新された行数（cursor.rowcount）が 0 なら、存在しないのか版が違うのかを調べて例外を選ぶ。
     - created_at は datetime.isoformat() で文字列にして保存し、datetime.fromisoformat() で戻す
       （タイムゾーンの情報も保たれる）。status は OrderStatus(文字列) で戻せる。
+    - list_by_customer の順序は「時刻の順」。ISO 形式の文字列の辞書順は、タイムゾーンの違う時刻が
+      混ざると時刻の順にならない（"…T18:02:00+09:00" は 09:02 UTC なのに "…T09:05:00+00:00" より後に並ぶ）。
+      SQL の ORDER BY created_at に頼らず、読み込んだ datetime で並べ替える（または UTC にそろえて保存する）。
     """
 
     def __init__(self, conn: sqlite3.Connection) -> None:

@@ -81,10 +81,11 @@ def normalize_text(text: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", text).split())
 
 
-_COMPACT_WAREKI = re.compile(r"^([RH])(\d{2})(\d{2})(\d{2})$")
-_SEPARATED_WAREKI = re.compile(r"^(R|H|令和|平成)(元|\d{1,2})[./年-](\d{1,2})[./月-](\d{1,2})日?$")
-_COMPACT_SEIREKI = re.compile(r"^(\d{4})(\d{2})(\d{2})$")
-_SEPARATED_SEIREKI = re.compile(r"^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$")
+# 数字は [0-9] で書く。\d は「٣」のような他の文字体系の数字にも一致し、int() もそれを受け付けてしまう
+_COMPACT_WAREKI = re.compile(r"^([RH])([0-9]{2})([0-9]{2})([0-9]{2})$")
+_SEPARATED_WAREKI = re.compile(r"^(R|H|令和|平成)(元|[0-9]{1,2})[./年-]([0-9]{1,2})[./月-]([0-9]{1,2})日?$")
+_COMPACT_SEIREKI = re.compile(r"^([0-9]{4})([0-9]{2})([0-9]{2})$")
+_SEPARATED_SEIREKI = re.compile(r"^([0-9]{4})[/-]([0-9]{1,2})[/-]([0-9]{1,2})$")
 
 # 元号: (西暦年 = 元号の年 + offset, 開始日, 終了日)
 _ERAS = {
@@ -120,7 +121,7 @@ def _make_date(y: int, m: int, d: int, original: str) -> date:
         raise InvalidValueError(f"存在しない日付です: {original!r}") from None
 
 
-_TIME = re.compile(r"^(\d{2}):?(\d{2})$")
+_TIME = re.compile(r"^([0-9]{2}):?([0-9]{2})$")
 
 
 def parse_legacy_time(text: str) -> timedelta:
@@ -134,7 +135,7 @@ def parse_legacy_time(text: str) -> timedelta:
     return timedelta(hours=hours, minutes=minutes)
 
 
-_PHONE = re.compile(r"^0\d{9,10}$")
+_PHONE = re.compile(r"^0[0-9]{9,10}$")
 _ASCII_DIGITS = re.compile(r"^[0-9]+$")  # str.isdigit() は「٣」などの他の文字体系の数字も True にするので使わない
 
 

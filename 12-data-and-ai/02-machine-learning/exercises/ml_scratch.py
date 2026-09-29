@@ -425,7 +425,8 @@ def cross_val_score(
     seed: int = 0,
     metric: Callable[[Sequence[Any], Sequence[Any]], float] = accuracy,
 ) -> list[float]:
-    """k 分割交差検証。分割ごとに model_factory() で **新しい** モデルを作り、学習用で fit し、
+    """k 分割交差検証。分割は k_fold_indices(len(X), k, seed=seed)（shuffle=True）で作る。
+    分割ごとに model_factory() で **新しい** モデルを作り、学習用で fit し、
     検証用で predict して metric(正解, 予測) を計算する。k 個のスコアのリストを返す。
 
     >>> cross_val_score(lambda: DecisionTreeClassifier(max_depth=3), X, y, k=5)   # doctest: +SKIP
