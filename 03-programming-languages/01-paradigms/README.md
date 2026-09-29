@@ -88,7 +88,7 @@ grid[0][0] = 1
 print(grid)               # [[1, 0, 0], [1, 0, 0], [1, 0, 0]]
 ```
 
-1 か所を書き換えたつもりが 3 行とも変わりました。`[0] * 3` で作った 1 つのリストを 3 つの行が共有しているからです。状態を「誰が、いつ書き換えうるか」を追えなくなることが、大規模な命令型コードで最も多いバグの源で、並行処理が絡むとデータ競合になります（[4.4 並行処理と同期](../../04-operating-systems/04-concurrency/README.md)）。同じ計算を、状態の書き換えなしでも書けます。
+1 か所を書き換えたつもりが 3 行とも変わりました。`[0] * 3` で作った 1 つのリストを 3 つの行が共有しているからです。状態を「誰が、いつ書き換えうるか」を追えなくなることが、大規模な命令型コードで最も多いバグの源で、並行処理が絡むとデータ競合になります（[4.4 並行処理と同期](../../04-operating-systems/04-concurrency/README.md)）。「1〜10 の偶数の 2 乗の和」を、状態を書き換える書き方と、書き換えない書き方で比べてみましょう。
 
 ```python
 total = 0                                     # 命令型: 状態を順に書き換える
@@ -149,19 +149,7 @@ Rect のオブジェクト          Rect の vtable（クラスごとに 1 つ�
 shape->area() は「vptr が指す表の area 欄にある関数を呼ぶ」という間接呼び出しになる
 ```
 
-間接呼び出しはメモリ参照と分岐予測のコストがかかり、呼び出し先が分からないのでインライン展開も妨げます。そのため JVM や JavaScript エンジンの JIT コンパイラは、実行時に観測した型から呼び出し先を推測して直接呼び出しに置き換える最適化（脱仮想化, devirtualization やインラインキャッシュ）を行います。Python では、`obj.method` はクラスの **MRO（method resolution order）** という探索順で属性を探し、多重継承でも探索順は一意に決まります。
-
-```python
-class A:
-    def hello(self): return "A"
-class B(A):
-    def hello(self): return "B"
-class C(A):
-    def hello(self): return "C"
-class D(B, C): pass
-
-print([k.__name__ for k in D.__mro__], D().hello())   # ['D', 'B', 'C', 'A', 'object'] B
-```
+間接呼び出しはメモリ参照と分岐予測のコストがかかり、呼び出し先が分からないのでインライン展開も妨げます。そのため JVM や JavaScript エンジンの JIT コンパイラは、実行時に観測した型から呼び出し先を推測して直接呼び出しに置き換える最適化（脱仮想化, devirtualization やインラインキャッシュ）を行います。Python では、`obj.method` はクラスの **MRO（method resolution order）** という探索順で属性を探し、多重継承でも探索順は一意に決まります（`class D(B, C)` で `B` と `C` がともに `A` を継承しているなら、`D.__mro__` は `D, B, C, A, object` の順です）。
 
 ### 2.5 継承と合成 — 脆い基底クラス問題
 
@@ -352,16 +340,7 @@ c = b.set(0, 9)         c ──▶ [9] ──┘            （先頭だけ作�
 
 ### 4.3 第一級関数と高階関数
 
-関数を数値や文字列と同じように変数に入れ、引数に渡し、戻り値として返せることを **第一級関数（first-class function）**、関数を受け取ったり返したりする関数を **高階関数（higher-order function）** と呼びます。代表が `map`（各要素を変換）、`filter`（条件で選ぶ）、`reduce`（畳み込む）です。
-
-```python
-from functools import reduce
-evens = filter(lambda n: n % 2 == 0, range(1, 11))
-squares = map(lambda n: n * n, evens)
-print(reduce(lambda acc, n: acc + n, squares, 0))   # 220
-```
-
-Python では内包表記や `sum` の方が読みやすいことが多く、記法そのものより **「繰り返しの骨組み」と「各要素への処理」を分離できる** という考え方が大事です。関数を組み合わせる道具として、関数合成（`compose`, `pipe`）や、引数を 1 つずつ受け取る関数に変換する **カリー化（currying）** があります（演習 1）。
+関数を数値や文字列と同じように変数に入れ、引数に渡し、戻り値として返せることを **第一級関数（first-class function）**、関数を受け取ったり返したりする関数を **高階関数（higher-order function）** と呼びます。代表が `map`（各要素を変換）、`filter`（条件で選ぶ）、`reduce`（畳み込む）です。本章 2.1 節の「1〜10 の偶数の 2 乗の和」は、`functools.reduce` を使って `reduce(lambda acc, n: acc + n, map(lambda n: n * n, filter(lambda n: n % 2 == 0, range(1, 11))), 0)`（結果は 220）と書けます。Python では内包表記や `sum` の方が読みやすいことが多く、記法そのものより **「繰り返しの骨組み」と「各要素への処理」を分離できる** という考え方が大事です。関数を組み合わせる道具として、関数合成（`compose`, `pipe`）や、引数を 1 つずつ受け取る関数に変換する **カリー化（currying）** があります（演習 1）。
 
 ### 4.4 再帰と末尾呼び出し
 

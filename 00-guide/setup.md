@@ -117,6 +117,7 @@ python3 tools/check.py -v 1.1       # unittest の詳細な出力
 python3 tools/check.py 1            # 第 1 部の全演習
 python3 tools/check.py              # すべての演習の進捗
 python3 tools/check.py --list       # 演習のある章の一覧
+python3 tools/check.py 3.4 -k TestStage1   # 名前に TestStage1 を含むテストだけ
 ```
 
 特定のテストだけを実行したいときは、演習のディレクトリで `unittest` を直接使います。

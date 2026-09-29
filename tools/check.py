@@ -7,6 +7,7 @@
   python3 tools/check.py 1.1                # 1.1章の演習をテスト
   python3 tools/check.py 01-computer-systems/01-data-representation   # パス指定も可
   python3 tools/check.py -v 1.1             # unittest の詳細出力を表示
+  python3 tools/check.py 3.4 -k TestStage1  # 名前に TestStage1 を含むテストだけを実行
   python3 tools/check.py --list             # 演習のある章の一覧
   python3 tools/check.py --solutions        # 解答例（solutions/）でテスト（教材の検証用）
 
@@ -182,7 +183,7 @@ def parse_output(result: Result, output: str) -> None:
         result.failed_tests = len(failed_ids)
 
 
-def run_chapter(chapter: Path, use_solutions: bool, verbose: bool) -> Result:
+def run_chapter(chapter: Path, use_solutions: bool, verbose: bool, patterns: list[str] | None = None) -> Result:
     result = Result(chapter)
     with tempfile.TemporaryDirectory(prefix="study-cs-") as tmp:
         run_dir = (
@@ -191,6 +192,8 @@ def run_chapter(chapter: Path, use_solutions: bool, verbose: bool) -> Result:
         cmd = [sys.executable, "-m", "unittest", "discover", "-s", ".", "-t", ".", "-p", "test_*.py"]
         if verbose:
             cmd.append("-v")
+        for pattern in patterns or []:
+            cmd += ["-k", pattern]
         env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONIOENCODING="utf-8")
         try:
             proc = subprocess.run(
@@ -273,6 +276,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-v", "--verbose", action="store_true", help="unittest の詳細出力を表示する")
     parser.add_argument("--solutions", action="store_true", help="解答例でテストする（教材の検証用）")
     parser.add_argument("--list", action="store_true", help="演習のある章を一覧表示する")
+    parser.add_argument(
+        "-k", dest="patterns", action="append", metavar="PATTERN",
+        help="名前にパターンを含むテストだけを実行する（unittest の -k と同じ。例: -k TestStage1）",
+    )
     args = parser.parse_args(argv)
 
     chapters, had_error = select_chapters(args.targets)
@@ -292,7 +299,7 @@ def main(argv: list[str] | None = None) -> int:
 
     results: list[Result] = []
     for chapter in chapters:
-        r = run_chapter(chapter, args.solutions, args.verbose)
+        r = run_chapter(chapter, args.solutions, args.verbose, args.patterns)
         results.append(r)
         note = ""
         if r.timed_out:
