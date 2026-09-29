@@ -203,8 +203,6 @@ class FeatureDrift:
     reasons: tuple[str, ...] = ()
 
 
-_LEVEL = {"ok": 0, "warn": 1, "alert": 2}
-
 
 def evaluate_drift(
     reference: dict[str, Sequence],
