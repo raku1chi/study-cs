@@ -7,7 +7,7 @@
 
 チェック内容:
   - 章 README の必須見出し・タイトル形式・メタ情報（学習時間）の書式
-  - 相対リンク切れ（コードブロック内は除外）
+  - 相対リンク切れ・リンク先の見出し（#アンカー）の有無（コードブロック内は除外）
   - コードフェンス・<details> の対応
   - Mermaid ブロックの典型的な構文ミス（未クォートのラベル内の括弧など）
   - GitHub の数式記法と衝突しやすい「$」の使い方
@@ -16,7 +16,9 @@ from __future__ import annotations
 
 import re
 import sys
+import unicodedata
 from pathlib import Path
+from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -39,6 +41,7 @@ TIME_RE = re.compile(r"本文\s*\d+(?:\.\d+)?\s*h\s*[+＋]\s*演習\s*\d+(?:\.\d
 LINK_RE = re.compile(r"!?\[(?:[^\[\]]|\[[^\]]*\])*\]\(\s*<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\s*\)")
 INLINE_CODE_RE = re.compile(r"(`+)(.+?)\1")
 FENCE_RE = re.compile(r"^( {0,3})(`{3,}|~{3,})(.*)$")
+HEADING_RE = re.compile(r"^ {0,3}#{1,6}\s+(.+?)(?:\s+#+)?\s*$")
 MERMAID_TYPES = (
     "flowchart", "graph", "sequenceDiagram", "classDiagram", "stateDiagram",
     "stateDiagram-v2", "erDiagram", "gantt", "pie", "journey", "mindmap",
@@ -110,6 +113,40 @@ def split_blocks(lines: list[str]):
     return out, unclosed
 
 
+def slugify(heading: str) -> str:
+    """GitHub が見出しに付けるアンカー名（小文字化し、文字・数字・-・_ 以外を除き、空白を - にする）"""
+    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", heading)
+    text = re.sub(r"<[^>]+>", "", text).replace("`", "").replace("*", "")
+    out = []
+    for ch in text.lower():
+        if ch == " ":
+            out.append("-")
+        elif ch in "-_" or unicodedata.category(ch)[0] in "LMN":
+            out.append(ch)
+    return "".join(out)
+
+
+_ANCHOR_CACHE: dict[Path, set[str]] = {}
+
+
+def heading_anchors(path: Path) -> set[str]:
+    if path not in _ANCHOR_CACHE:
+        lines = path.read_text(encoding="utf-8").splitlines()
+        seen: dict[str, int] = {}
+        anchors: set[str] = set()
+        for _, line, in_fence, _ in split_blocks(lines)[0]:
+            m = HEADING_RE.match(line)
+            if in_fence or not m:
+                continue
+            slug = slugify(m.group(1))
+            count = seen.get(slug, 0)
+            seen[slug] = count + 1
+            anchors.add(slug if count == 0 else f"{slug}-{count}")  # 同名の見出しには -1, -2 … が付く
+        anchors.update(re.findall(r"<a\s+(?:id|name)=\"([^\"]+)\"", "\n".join(lines)))
+        _ANCHOR_CACHE[path] = anchors
+    return _ANCHOR_CACHE[path]
+
+
 def check_links(path: Path, blocks, report: Report) -> None:
     for i, line, in_fence, _ in blocks:
         if in_fence:
@@ -117,14 +154,18 @@ def check_links(path: Path, blocks, report: Report) -> None:
         text = INLINE_CODE_RE.sub("", line)
         for m in LINK_RE.finditer(text):
             target = m.group(1)
-            if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", target) or target.startswith("#"):
+            if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", target):
                 continue
-            target_path = target.split("#", 1)[0].split("?", 1)[0]
-            if not target_path:
-                continue
-            resolved = (path.parent / target_path).resolve()
+            target_path, _, fragment = target.split("?", 1)[0].partition("#")
+            resolved = (path.parent / target_path).resolve() if target_path else path
             if not resolved.exists():
                 report.error(path, i, f"リンク切れ: {target}")
+                continue
+            if resolved.is_dir():
+                resolved = resolved / "README.md"
+            if fragment and resolved.suffix == ".md" and resolved.exists():
+                if unquote(fragment) not in heading_anchors(resolved):
+                    report.error(path, i, f"リンク先に見出し（アンカー）がありません: {target}")
 
 
 def check_details(path: Path, blocks, report: Report) -> None:
