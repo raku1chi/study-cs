@@ -39,6 +39,9 @@ jobs:
           python tools/check.py > stubs.txt || true
           if grep -q "⚠️" stubs.txt; then cat stubs.txt; exit 1; fi
 
+      - name: スタブの docstring の使用例を解答例で確認
+        run: python tools/check_docstrings.py
+
       - name: 15.1 のスターターのテスト
         working-directory: 15-capstone/01-engineering-capstone
         run: python -m unittest discover -s starter

@@ -232,6 +232,7 @@ GitHub は `$...$`（インライン）と `$$...$$`（ブロック）で数式�
 ```bash
 python3 tools/check.py --solutions 6.3   # 解答例で全テストが通ること
 python3 tools/check.py 6.3               # スタブでは失敗し、かつ「読み込みエラー」が出ないこと
+python3 tools/check_docstrings.py 6.3    # スタブの docstring の >>> の例が解答例で成り立つこと
 python3 tools/lint_content.py 06-databases/03-transactions
 ```
 
