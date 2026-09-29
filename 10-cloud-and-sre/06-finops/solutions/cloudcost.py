@@ -56,27 +56,7 @@ def tiered_cost(quantity: float, tiers: Sequence[tuple[float, float]]) -> float:
 
 
 # ===========================================================================
-# 演習2: 確約利用割引の損益分岐
-# ===========================================================================
-
-def breakeven_utilization(on_demand_hourly: float, committed_hourly: float) -> float:
-    if on_demand_hourly <= 0 or committed_hourly < 0:
-        raise ValueError("単価が不正です")
-    # 確約は使っても使わなくても毎時間払う。オンデマンドは使った時間だけ払う。
-    # 稼働率 u で u × オンデマンド = 確約 となる u が損益分岐点
-    return committed_hourly / on_demand_hourly
-
-
-def commitment_savings(on_demand_hourly: float, committed_hourly: float, utilization: float,
-                       hours: float = HOURS_PER_MONTH) -> float:
-    if not 0 <= utilization <= 1:
-        raise ValueError("utilization は 0〜1")
-    breakeven_utilization(on_demand_hourly, committed_hourly)  # 単価の検証
-    return (utilization * on_demand_hourly - committed_hourly) * hours
-
-
-# ===========================================================================
-# 演習3: スポットの中断を考慮した費用
+# 演習2: スポットの中断を考慮した費用
 # ===========================================================================
 
 def expected_runtime(job_hours: float, interruptions_per_hour: float, restart_overhead_hours: float = 0.0,
@@ -114,7 +94,7 @@ def spot_vs_on_demand(job_hours: float, on_demand_hourly: float, spot_hourly: fl
 
 
 # ===========================================================================
-# 演習4: 共有費用の配賦と単位あたりの費用
+# 演習3: 共有費用の配賦と単位あたりの費用
 # ===========================================================================
 
 def allocate(total_yen: int, usage: Mapping[str, float], method: str = "proportional",
@@ -154,7 +134,7 @@ def unit_cost(total_cost: float, units: float) -> float:
 
 
 # ===========================================================================
-# 演習5: 適正化（ライトサイジング）
+# 演習4: 適正化（ライトサイジング）
 # ===========================================================================
 
 def rightsize(cpu_used: Sequence[float], memory_used_gib: Sequence[float], catalog: Sequence[InstanceType],
@@ -179,8 +159,24 @@ def monthly_savings(current: InstanceType, recommended: InstanceType, count: int
 
 
 # ===========================================================================
-# 演習6: 確約の量を決める
+# 演習5: 確約利用割引（損益分岐と、確約する量の決定）
 # ===========================================================================
+
+def breakeven_utilization(on_demand_hourly: float, committed_hourly: float) -> float:
+    if on_demand_hourly <= 0 or committed_hourly < 0:
+        raise ValueError("単価が不正です")
+    # 確約は使っても使わなくても毎時間払う。オンデマンドは使った時間だけ払う。
+    # 稼働率 u で u × オンデマンド = 確約 となる u が損益分岐点
+    return committed_hourly / on_demand_hourly
+
+
+def commitment_savings(on_demand_hourly: float, committed_hourly: float, utilization: float,
+                       hours: float = HOURS_PER_MONTH) -> float:
+    if not 0 <= utilization <= 1:
+        raise ValueError("utilization は 0〜1")
+    breakeven_utilization(on_demand_hourly, committed_hourly)  # 単価の検証
+    return (utilization * on_demand_hourly - committed_hourly) * hours
+
 
 def commitment_cost(hourly_usage: Sequence[float], level: float, on_demand_rate: float, commit_rate: float) -> float:
     if level < 0 or on_demand_rate < 0 or commit_rate < 0:
@@ -205,6 +201,9 @@ def optimal_commitment(hourly_usage: Sequence[float], on_demand_rate: float, com
         raise ValueError("hourly_usage が空です")
     if step <= 0:
         raise ValueError("step は正の数")
+    # 直感: 確約を 1 単位増やす価値があるのは、その 1 単位が使われる時間の割合が
+    # 確約の単価 / オンデマンドの単価 を上回るとき（在庫理論の「新聞売り子問題」と同じ構造）。
+    # ここでは候補の水準をすべて評価して、確実に最小の費用を求める
     baseline = commitment_cost(hourly_usage, 0.0, on_demand_rate, commit_rate)
     best_level, best_cost = 0.0, baseline
     k = 1

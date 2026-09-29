@@ -69,23 +69,7 @@ class TestExercise1Tiered(unittest.TestCase):
             tiered_cost(1, [])
 
 
-class TestExercise2Commitment(unittest.TestCase):
-    def test_breakeven(self):
-        self.assertAlmostEqual(breakeven_utilization(100, 62), 0.62, msg="38% 割引なら稼働率 62% が分岐点")
-        self.assertAlmostEqual(breakeven_utilization(100, 100), 1.0)
-        with self.assertRaises(ValueError):
-            breakeven_utilization(0, 10)
-
-    def test_savings(self):
-        self.assertAlmostEqual(commitment_savings(100, 62, 1.0), 38 * HOURS_PER_MONTH)
-        self.assertAlmostEqual(commitment_savings(100, 62, 0.62), 0.0)
-        self.assertAlmostEqual(commitment_savings(100, 62, 0.5), -12 * HOURS_PER_MONTH, msg="使わない確約は損")
-        self.assertAlmostEqual(commitment_savings(100, 62, 1.0, hours=8760), 38 * 8760)
-        with self.assertRaises(ValueError):
-            commitment_savings(100, 62, 1.2)
-
-
-class TestExercise3Spot(unittest.TestCase):
+class TestExercise2Spot(unittest.TestCase):
     def test_no_interruptions(self):
         self.assertEqual(expected_runtime(10, 0.0), 10)
         self.assertEqual(expected_runtime(10, 0.0, 0.5, checkpoint_hours=1), 10)
@@ -142,7 +126,7 @@ class TestExercise3Spot(unittest.TestCase):
             spot_vs_on_demand(1, -1, 1, 0.1)
 
 
-class TestExercise4Allocate(unittest.TestCase):
+class TestExercise3Allocate(unittest.TestCase):
     def test_proportional_sums_exactly(self):
         result = allocate(1_000_000, {"a": 1, "b": 1, "c": 1})
         self.assertEqual(result, {"a": 333_334, "b": 333_333, "c": 333_333})
@@ -187,7 +171,7 @@ class TestExercise4Allocate(unittest.TestCase):
             unit_cost(100, 0)
 
 
-class TestExercise5Rightsize(unittest.TestCase):
+class TestExercise4Rightsize(unittest.TestCase):
     def test_rightsize(self):
         rng = random.Random(606)
         cpu = [max(0.1, rng.gauss(1.0, 0.3)) for _ in range(24 * 14)]
@@ -224,7 +208,23 @@ class TestExercise5Rightsize(unittest.TestCase):
             rightsize([1.0], [1.0], CATALOG, headroom=-0.1)
 
 
-class TestExercise6CommitmentSizing(unittest.TestCase):
+class TestExercise5Commitment(unittest.TestCase):
+    def test_breakeven(self):
+        self.assertAlmostEqual(breakeven_utilization(100, 62), 0.62, msg="38% 割引なら稼働率 62% が分岐点")
+        self.assertAlmostEqual(breakeven_utilization(100, 100), 1.0)
+        with self.assertRaises(ValueError):
+            breakeven_utilization(0, 10)
+
+    def test_savings(self):
+        self.assertAlmostEqual(commitment_savings(100, 62, 1.0), 38 * HOURS_PER_MONTH)
+        self.assertAlmostEqual(commitment_savings(100, 62, 0.62), 0.0)
+        self.assertAlmostEqual(commitment_savings(100, 62, 0.5), -12 * HOURS_PER_MONTH, msg="使わない確約は損")
+        self.assertAlmostEqual(commitment_savings(100, 62, 1.0, hours=8760), 38 * 8760)
+        with self.assertRaises(ValueError):
+            commitment_savings(100, 62, 1.2)
+
+
+class TestExercise5CommitmentSizing(unittest.TestCase):
     def test_cost(self):
         usage = [10, 20, 30]
         self.assertEqual(commitment_cost(usage, 0, 100, 60), 60 * 100)

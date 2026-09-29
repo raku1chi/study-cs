@@ -20,7 +20,7 @@ INVENTORY = [
 ]
 
 
-class TestExercise7Audit(unittest.TestCase):
+class TestExercise6Audit(unittest.TestCase):
     def test_compliant(self):
         self.assertEqual(check_resource(INVENTORY[0], EXAMPLE_POLICY), [])
 
@@ -49,7 +49,7 @@ class TestExercise7Audit(unittest.TestCase):
         self.assertEqual(check_resource(r, EXAMPLE_POLICY), [])
 
 
-class TestExercise7CostReport(unittest.TestCase):
+class TestExercise6CostReport(unittest.TestCase):
     def test_report(self):
         report = cost_report(INVENTORY, EXAMPLE_POLICY)
         self.assertEqual(report["total"], 830_000)
