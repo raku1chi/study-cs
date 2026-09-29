@@ -115,7 +115,7 @@ def expected_time_to_fill(target_hires: int, stages: list[Stage], weekly_applica
 def interviewer_load(
     target_hires: int, stages: list[Stage], weeks: float, interviewers: dict[str, int]
 ) -> dict[str, float]:
-    """段階ごとの「面接官 1 人あたりの週の負荷（時間）」を返す。
+    """段階ごとの「面接官 1 人あたりの週の負荷（時間）」を返す（キーは段階の名前で、stages の順）。
 
     負荷 = その段階に入る候補者数 × interview_hours ÷ weeks ÷ その段階を担当する面接官の人数
     （候補者数は required_pipeline の結果。面接は担当者で均等に分担できると仮定）
