@@ -257,7 +257,7 @@ requests と limits の組み合わせで、Pod の **QoS クラス** が決ま�
 | Burstable | requests か limits が少なくとも 1 つ設定されている（Guaranteed 以外） | requests を超えて使っているものから追い出される |
 | BestEffort | requests も limits もない | 最初に追い出される |
 
-右の列は目安です（簡略化しています）。kubelet が追い出す Pod を選ぶ基準は、QoS クラスそのものではなく「使用量が requests を超えているか」→「Pod の優先度（PriorityClass）」→「requests からの超過量」の順です。BestEffort は requests が 0 なので常に超過している側に入り、Guaranteed は requests を超えて使えないので最後の側に入る、という結果としてこの順序になりやすいのです。kubelet が追い出す前にノードのメモリが尽きた場合は、カーネルの OOM キラーが、QoS クラスに応じて設定された優先度（BestEffort が最も殺されやすい）でプロセスを強制終了します。
+右の列は目安です（簡略化しています）。kubelet が追い出す Pod を選ぶ基準は、QoS クラスそのものではなく「使用量が requests を超えているか」→「Pod の優先度（PriorityClass）」→「requests からの超過量」の順です。BestEffort は requests が 0 なので少しでも使えば超過している側に入り、Guaranteed は requests を超えて使えないので後回しの側に入るため、結果としてこの順序になりやすいのです。kubelet が追い出す前にノードのメモリが尽きた場合は、カーネルの OOM キラーが、QoS クラスに応じて設定された優先度（BestEffort が最も殺されやすい）でプロセスを強制終了します。
 
 実務では、**メモリは requests = limits にして予測可能にし、CPU は requests を実測に基づいて設定する** のが一般的です。CPU の limits を付けるかどうかは議論があり、遅延に敏感なサービスではスロットリングを避けるために付けない運用もあります（その場合は、同じノードの他の Pod を圧迫しないよう requests を適切に設定することが前提です）。Java（JVM）や Go のようなランタイムでは、ランタイム側のメモリの設定（JVM のヒープの上限 `-Xmx` や `-XX:MaxRAMPercentage`、Go の `GOMEMLIMIT` など）をコンテナのメモリ上限と整合させる必要があります。ヒープ以外に使うメモリ（スレッドのスタック、ネイティブのメモリなど）を見込まずにヒープを上限近くまで広げると OOMKilled され、逆に小さすぎると与えたメモリを活かせずにガベージコレクションが頻発します。
 
@@ -491,7 +491,7 @@ StatefulSet は、Pod ごとに固定の名前（`db-0`, `db-1`）と専用の P
 | Pod の権限 | **Pod Security Standards**（Privileged / Baseline / Restricted の 3 段階）を、名前空間のラベルで Pod Security Admission に強制させる。root での実行、特権コンテナ、ホストのファイルシステムのマウントを禁止する。旧来の PodSecurityPolicy は 1.25 で削除された |
 | 秘密情報 | Secret は既定では **base64 で符号化されているだけで暗号化されていない**。etcd の暗号化（KMS 連携）を有効にし、クラウドのシークレット管理サービスと連携する（External Secrets Operator など） |
 | イメージ | 信頼できるレジストリのイメージだけを許可し、署名（Sigstore の cosign など）を検証する。アドミッションのポリシー（Kyverno、OPA Gatekeeper、組み込みの ValidatingAdmissionPolicy）で強制する（→ [11.5](../../11-security/05-security-operations/README.md) のサプライチェーン） |
-| クラウドの権限 | Pod に長期のアクセスキーを渡さず、ワークロード ID（EKS Pod Identity や IRSA、GKE の Workload Identity、AKS のワークロード ID）で ServiceAccount とクラウドのロールを結びつける（[10.1](../01-cloud-and-iac/README.md) の原則と同じ） |
+| クラウドの権限 | Pod に長期のアクセスキーを渡さず、ワークロード ID（EKS Pod Identity や IRSA、GKE の Workload Identity Federation for GKE、AKS のワークロード ID）で ServiceAccount とクラウドのロールを結びつける（[10.1](../01-cloud-and-iac/README.md) の原則と同じ） |
 | ネットワーク | NetworkPolicy で既定を拒否にし、必要な通信だけを許可する |
 
 Namespace は名前と権限の範囲を分けますが、同じノードのカーネルを共有するので、**悪意のあるテナントどうしを隔離する強いセキュリティ境界ではありません**。信頼できない顧客のコードを動かす場合は、クラスタ（やノードプール）を分ける、gVisor や Kata Containers のようなより強い隔離を使う、といった設計が必要です。
