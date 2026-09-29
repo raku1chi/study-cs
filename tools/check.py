@@ -307,7 +307,7 @@ def main(argv: list[str] | None = None) -> int:
         elif r.load_error:
             note = "  テストの読み込みに失敗（構文エラー・import エラーを確認）"
         elif r.skipped:
-            note = f"  （この環境ではスキップ: {r.skipped}）"
+            note = f"  （スキップ: {r.skipped}）"
         print(f"{status_icon(r)} {rel(chapter):52s} {bar(r.passed, r.counted)} {r.passed:3d}/{r.counted:<3d}{note}")
         if args.verbose and r.output.strip():
             print("\n".join("    " + line for line in r.output.rstrip().splitlines()))
