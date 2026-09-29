@@ -229,7 +229,13 @@ class LSMTree:
 
     def _merged(self, sources: list[Iterable[tuple[str, str | None]]]) -> Iterator[tuple[str, str | None]]:
         """新しい順に並んだソースを k-way マージし、キーごとに最新の値（墓標を含む）を返す。"""
-        streams = [((k, rank, v) for k, v in src) for rank, src in enumerate(sources)]
+        def tagged(rank: int, src: Iterable[tuple[str, str | None]]) -> Iterator[tuple[str, int, str | None]]:
+            # rank を引数で受け取る（内包表記の中のジェネレータ式で rank を参照すると、
+            # 実行時には最後の値になってしまう「遅延束縛」の罠がある）
+            for k, v in src:
+                yield k, rank, v
+
+        streams = [tagged(rank, src) for rank, src in enumerate(sources)]
         last = None
         for key, _rank, value in heapq.merge(*streams):
             if key != last:  # 同じキーでは rank の小さい（新しい）ものが先に来る

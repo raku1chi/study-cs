@@ -183,7 +183,8 @@ class TestTemporalCoupling(unittest.TestCase):
         self.assertEqual(len(everything), 10)
         self.assertTrue(all(c.a < c.b for c in everything))
         recent = temporal_coupling(self.commits, max_changeset_size=5, since=date(2026, 4, 1), min_shared=2)
-        self.assertEqual([(c.a, c.b, c.shared) for c in recent][:2], [(MODELS, SERVICE, 2), (INVOICE, MAIL, 3)])
+        self.assertEqual([(c.a, c.b, c.shared) for c in recent][:3],
+                         [(INVOICE, TEST_INVOICE, 4), (INVOICE, TAX, 3), (INVOICE, MAIL, 3)])
 
     def test_small_example(self):
         log = (

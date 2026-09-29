@@ -238,6 +238,9 @@ class LSMTree:
 
         ヒント: 各ソースを (キー, ソースの番号, 値) の列にして heapq.merge に渡すと、同じキーでは
         番号の小さい（新しい）ソースが先に出てくる。
+        注意: `[((k, rank, v) for k, v in src) for rank, src in enumerate(sources)]` のように、
+        内包表記の中のジェネレータ式で rank を参照すると、実行されるときには rank が最後の値に
+        なっている（遅延束縛）。rank を引数で受け取るジェネレータ関数を使うこと。
         """
         raise NotImplementedError("演習2-2: scan を実装してください")
 

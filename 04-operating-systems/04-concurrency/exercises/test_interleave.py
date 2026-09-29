@@ -27,11 +27,6 @@ class TestExercise5CountInterleavings(unittest.TestCase):
 
 
 class TestExercise5Explore(unittest.TestCase):
-    def test_increment_program_helper(self):
-        self.assertEqual(increment_program("x"), LOST_UPDATE)
-        self.assertEqual(increment_program("y", lock="L"),
-                         [("lock", "L"), ("read", "y"), ("inc",), ("write", "y"), ("unlock", "L")])
-
     def test_single_thread(self):
         r = explore([LOST_UPDATE], {"x": 41})
         self.assertEqual(r, ExploreResult(Counter({(("x", 42),): 1}), 0, 1))

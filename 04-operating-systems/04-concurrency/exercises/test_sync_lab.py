@@ -382,19 +382,30 @@ class TestExercise3Transfer(unittest.TestCase):
         plans = [[(rng.randrange(10), rng.randrange(10), rng.randrange(1, 50)) for _ in range(2000)]
                  for _ in range(8)]
 
+        errors = []
+        succeeded = []
+
         def worker(plan):
-            for s, d, amount in plan:
-                if s == d:
-                    continue
-                try:
-                    transfer(accounts[s], accounts[d], amount)
-                except InsufficientFunds:
-                    pass
+            ok = 0
+            try:
+                for s, d, amount in plan:
+                    if s == d:
+                        continue
+                    try:
+                        transfer(accounts[s], accounts[d], amount)
+                        ok += 1
+                    except InsufficientFunds:
+                        pass
+            except BaseException as e:  # スレッド内の例外は、そのままでは誰にも気づかれない
+                errors.append(e)
+            succeeded.append(ok)
 
         threads = [start(worker, p) for p in plans]
         for t in threads:
             t.join(TIMEOUT)
             self.assertFalse(t.is_alive(), "デッドロックしていないこと（時間内に終わること）")
+        self.assertEqual(errors, [], "送金中に予期しない例外が起きてはいけない")
+        self.assertGreater(sum(succeeded), 1000, "送金の多くは成功するはず")
         self.assertEqual(sum(a.balance for a in accounts), 10 * 1000, "お金の総額は変わらない")
         self.assertTrue(all(a.balance >= 0 for a in accounts))
 
