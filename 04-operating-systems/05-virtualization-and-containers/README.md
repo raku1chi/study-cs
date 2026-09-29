@@ -112,7 +112,7 @@ user -> user:[4026531837]
 uts -> uts:[4026531838]
 ```
 
-`unshare` コマンドを使うと、コンテナランタイムなしで名前空間を作れます（Linux、root 権限が必要。ただし user 名前空間は一般ユーザーでも作れることが多い）。
+`unshare` コマンドを使うと、コンテナランタイムなしで名前空間を作れます（Linux、root 権限が必要。user 名前空間は一般ユーザーでも作れることが多いが、ディストリビューションの設定で制限されている場合もある）。
 
 ```text
 $ hostname; unshare --uts sh -c 'hostname container-demo; hostname'; hostname
