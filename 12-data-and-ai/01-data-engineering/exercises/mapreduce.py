@@ -167,8 +167,8 @@ def word_count(
     - use_combiner=True なら、Reducer と同じ関数を Combiner にも使う
       （足し算は結合的・可換なので、Map 側で部分和を取っても結果は変わらない）。
 
-    >>> word_count(["a b a"]).as_dict()
-    {'a': 2, 'b': 1}
+    >>> sorted(word_count(["a b a"]).as_dict().items())   # 出力はパーティション順なので並べ替えて比べる
+    [('a', 2), ('b', 1)]
     """
     raise NotImplementedError("演習1c: word_count を実装してください")
 

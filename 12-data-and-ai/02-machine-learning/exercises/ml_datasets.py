@@ -76,9 +76,9 @@ def make_blobs(
 
 
 def make_xor(n: int, *, margin: float = 0.1, seed: int = 0) -> tuple[Matrix, list[int]]:
-    """[-1, 1]² の点を、x と y の符号が同じなら 0、違えば 1 とラベル付けする（XOR）。
+    """[-1, 1]² の点 (x0, x1) を、x0 と x1 の符号が同じなら 0、違えば 1 とラベル付けする（XOR）。
 
-    軸の近く（|x| < margin または |y| < margin）の点は作らない。
+    軸の近く（|x0| < margin または |x1| < margin）の点は作らない。
     線形モデルでは分離できないが、決定木なら深さ 2 で分離できる。
     """
     rng = random.Random(seed)

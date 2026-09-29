@@ -81,7 +81,9 @@ class LinearRegressionGD:
     1. standardize=True なら Standardizer で X を標準化する（False ならそのまま使う）。
     2. w = 0, b = 0 から始め、n_epochs 回、「損失を計算して loss_history_ に追加 → 勾配で更新」
        を繰り返す（loss_history_[0] は初期値での損失）。
-       損失が有限でなくなったら（発散）、そこで打ち切る。
+       損失が有限でなくなったら（発散）、その値（inf や nan）を追加したところで打ち切る。
+       注意: 発散すると誤差が非常に大きくなる。float の `err ** 2` や math.pow は範囲を超えると
+       OverflowError を送出するが、`err * err` なら inf になるので、二乗は掛け算で計算すること。
     3. 学習した (w, b) を **元の特徴量のスケール** に戻して coef_ / intercept_ に保存する:
        b + Σ w_j (x_j - μ_j)/σ_j = (b - Σ w_j μ_j/σ_j) + Σ (w_j/σ_j) x_j
 

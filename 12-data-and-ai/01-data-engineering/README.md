@@ -101,7 +101,7 @@ flowchart LR
 
 - **ACID トランザクション**: 新しいデータファイルを書いてから、「現在のスナップショット」を指すポインタを原子的に差し替える。差し替えの競合は楽観的並行性制御（[6.3 トランザクション](../../06-databases/03-transactions/README.md)）で検出する。読み手は常に完全なスナップショットを見る。
 - **タイムトラベル**: 古いスナップショットを指定すれば、過去の時点のテーブルを読める（保持期間の範囲で）。
-- **スキーマの進化・パーティションの進化**: 列の追加や改名、パーティションの切り方の変更を、ファイルを書き直さずに行える。
+- **スキーマの進化・パーティションの進化**: 列の追加や改名を、ファイルを書き直さずに行える。Iceberg はパーティションの切り方の変更（partition evolution）にも対応している（対応する操作の範囲はフォーマットによって異なる）。
 
 | | DWH | データレイク | レイクハウス |
 |---|---|---|---|
@@ -140,7 +140,7 @@ join {{ ref('dim_customer') }} as c
  and (c.valid_to is null or o.ordered_at < c.valid_to)
 ```
 
-変換は層に分けるのが定石です。生データをほぼそのまま写す **staging**（型の変換・列名の統一だけ）、業務ロジックを組み立てる **intermediate**、利用者に提供する **marts**（スタースキーマや集計表）です。Databricks はこれを bronze / silver / gold と呼び、「メダリオンアーキテクチャ」として広めました。呼び方は違っても、**生データは変更せず残し、変換は再現可能なコードで行う** という原則は共通です。
+変換は層に分けるのが定石です。生データをほぼそのまま写す **staging**（型の変換・列名の統一だけ）、業務ロジックを組み立てる **intermediate**、利用者に提供する **marts**（スタースキーマや集計表）です。Databricks は似た層分けを bronze（生データ）/ silver（クレンジング・統合済み）/ gold（利用者向けの集計）と呼び、「メダリオンアーキテクチャ」として広めました。呼び方は違っても、**生データは変更せず残し、変換は再現可能なコードで行う** という原則は共通です。
 
 ### 2.2 取り込みの方式: 全件・増分・CDC
 
@@ -263,7 +263,7 @@ MapReduce は、1 つのジョブが終わるたびに結果を分散ファイ�
 - **系譜（lineage）による耐障害性**: 失われたパーティションは、それを作った処理の系譜をたどって再計算する。中間結果を複製して保存する必要がない。
 - **メモリへのキャッシュ**: 何度も使うデータをメモリに置ける。
 
-Spark は処理を **ステージ** に分けて実行します。`map` や `filter` のように、入力の 1 パーティションだけから出力の 1 パーティションが決まる処理（狭い依存）は、1 つのステージにまとめてパイプライン実行できます。`groupByKey`、`reduceByKey`、`join` のように、全パーティションのデータを並べ替える処理（広い依存）が **シャッフル＝ステージの境界** になります。現在は SQL や DataFrame API で書くのが主流で、オプティマイザが実行計画を選びます（[6.2 インデックスとクエリ処理](../../06-databases/02-indexes-and-query-processing/README.md) のクエリ最適化と同じ考え方です）。
+Spark は処理を **ステージ** に分けて実行します。`map` や `filter` のように、入力の 1 パーティションだけから出力の 1 パーティションが決まる処理（狭い依存）は、1 つのステージにまとめてパイプライン実行できます。`groupByKey`、`reduceByKey`、`join` のように、全パーティションのデータをキーごとに再配置する処理（広い依存）が **シャッフル＝ステージの境界** になります。現在は SQL や DataFrame API で書くのが主流で、オプティマイザが実行計画を選びます（[6.2 インデックスとクエリ処理](../../06-databases/02-indexes-and-query-processing/README.md) のクエリ最適化と同じ考え方です）。
 
 結合（join）の戦略は、シャッフルのコストで理解できます。
 
@@ -345,6 +345,8 @@ PYTHONHASHSEED=1: hash() → 5  crc32 → 5
 PYTHONHASHSEED=2: hash() → 5  crc32 → 5
 PYTHONHASHSEED=3: hash() → 4  crc32 → 5
 ```
+
+（上は Python 3.11 での出力です。`hash()` の値は Python のバージョンによっても変わりますが、crc32 の値はどの環境でも同じです。）
 
 `hash()` でパーティションを決めると、プロセスによって同じキーが別の Reducer に送られ、集計が静かに壊れます。分散処理のキーには、入力だけで決まる安定したハッシュ（CRC32、MurmurHash など）を使います。
 
@@ -561,7 +563,7 @@ Parquet ファイル
 
 | ツール | 特徴（2026 年時点） |
 |---|---|
-| Apache Airflow | Airbnb で 2014 年に生まれた。Python で DAG を定義するタスク中心の設計で、最も広く使われている |
+| Apache Airflow | Airbnb で 2014 年に生まれた。Python で DAG を定義するタスク中心の設計で、最も広く使われているものの 1 つ |
 | Dagster | 「タスク」ではなく「データ資産（asset）」を中心に定義する。資産間のリネージや鮮度を扱いやすい |
 | Prefect | Python の関数に近い書き方でフローを定義できる |
 
@@ -883,7 +885,7 @@ Type 2 では同じ顧客 ID に複数のバージョンがあるので、ナチ
 
 ## さらに学ぶために
 
-- Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』オライリー・ジャパン）第 10・11 章 — バッチ処理とストリーム処理の原理を、MapReduce から Kafka・Flink まで一貫した視点で解説。第 6・7 部の総まとめとしても最良の一冊。
+- Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』オライリー・ジャパン）第 1 版の第 10・11 章 — バッチ処理とストリーム処理の原理を、MapReduce から Kafka・Flink まで一貫した視点で解説。第 6・7 部の総まとめとしても最良の一冊。
 - Joe Reis, Matt Housley "Fundamentals of Data Engineering"（O'Reilly, 2022）— 特定の製品に依存せず、データエンジニアリングのライフサイクル全体を整理した入門書。
 - Ralph Kimball, Margy Ross "The Data Warehouse Toolkit"（第 3 版, Wiley, 2013）— 次元モデリングの定番。粒度・事実の種類・SCD・適合ディメンションを業種別の事例で学べる。
 - Jeffrey Dean, Sanjay Ghemawat "MapReduce: Simplified Data Processing on Large Clusters"（OSDI 2004）と Matei Zaharia ほか "Resilient Distributed Datasets"（NSDI 2012）— 分散データ処理の 2 つの転換点。どちらも短く読みやすい。
