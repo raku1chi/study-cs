@@ -98,6 +98,9 @@ def verify(
     2. |now - timestamp| > tolerance なら TimestampOutsideToleranceError（古すぎても未来すぎても拒否）
     3. secrets のどれかの鍵で計算した署名が、ヘッダーの v1 のどれかと一致すれば成功。
        なければ SignatureMismatchError。比較は hmac.compare_digest で行う。
+       ヘッダーの値は攻撃者が自由に作れるので、v1 に非 ASCII の文字が入っていても SignatureMismatchError に
+       すること（hmac.compare_digest は非 ASCII の文字を含む str どうしを比較できず TypeError を送出する。
+       bytes にしてから比較するとよい）。
     """
     raise NotImplementedError("演習1: verify を実装してください")
 

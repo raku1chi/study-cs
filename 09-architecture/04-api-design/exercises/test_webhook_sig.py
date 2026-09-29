@@ -84,6 +84,11 @@ class TestExercise1Verify(unittest.TestCase):
         with self.assertRaises(SignatureMismatchError, msg="別の鍵"):
             verify([b"attacker-guess"], "msg_1", header, BODY, now=T)
 
+    def test_non_ascii_signature_is_a_mismatch_not_a_crash(self):
+        # 攻撃者が作ったヘッダーで TypeError（= 500）にならず、検証の失敗として扱えること
+        with self.assertRaises(SignatureMismatchError):
+            verify([NEW], "msg_1", f"t={T},v1=署名ではない", BODY, now=T)
+
     def test_timestamp_tolerance(self):
         header = build_signature_header([NEW], "msg_1", T, BODY)
         self.assertEqual(verify([NEW], "msg_1", header, BODY, now=T + 300), T, "境界ちょうどは許容")

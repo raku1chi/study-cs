@@ -139,6 +139,7 @@ class ReliableSender:
     - 送信回数（最初の送信を含む）が max_attempts に達した後のタイマーで、まだ ACK がなければ諦めて
       failed に入れる。これは「相手が処理しなかった」ことを意味しない（ACK だけが失われたかもしれない）。
     - {"type": "ACK", "id": ID} を受け取ったら、その ID を pending から除いて acked に入れる。
+      pending にない ID の ACK（重複して届いた ACK や、諦めた後に届いた ACK）は無視する。
 
     属性:
         pending: {ID: (dst, body)} — ACK 待ち

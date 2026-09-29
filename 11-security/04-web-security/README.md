@@ -180,8 +180,24 @@ CSP は既存サイトにいきなり適用すると、正当なスクリプト�
 
 対策は 2 つです。
 
-- **SameSite Cookie**: Cookie に `SameSite=Lax`（または `Strict`）を設定し、他サイトからのリクエストでは Cookie を送らせない。現代のブラウザの既定が `Lax` になったことで、CSRF は大きく減りました。
-- **CSRF トークン**: フォームに、推測できないトークンを埋め込み、送信時に検証する。攻撃者はこのトークンを知らないので、偽のリクエストは弾かれます。演習 `csrf_tokens.py` で、HMAC 署名付きの同期トークン（セッションに紐づき、有効期限を持つ）と、double-submit cookie 方式の定数時間比較を実装します。
+攻撃の流れは次の通りです。被害者がログイン済みであることを悪用します。
+
+```mermaid
+sequenceDiagram
+  participant V as 被害者のブラウザ
+  participant E as 攻撃者のサイト
+  participant B as 銀行サイト（ログイン済み）
+  V->>E: 攻撃者のページを開く（罠のリンクを踏む）
+  E->>V: 隠しフォームを自動送信させる HTML を返す
+  V->>B: POST /transfer（送金）+ 銀行の Cookie を自動添付
+  Note over B: Cookie があるので「本人のリクエスト」に見えてしまう
+  B->>V: 送金実行（CSRF トークンがなければ）
+```
+
+対策は 2 つです。
+
+- **SameSite Cookie**: Cookie に `SameSite=Lax`（または `Strict`）を設定し、他サイトからのリクエストでは Cookie を送らせない。現代のブラウザの既定が `Lax` になったことで、CSRF は大きく減りました。上図の「Cookie を自動添付」が起きなくなります。
+- **CSRF トークン**: フォームに、推測できないトークンを埋め込み、送信時に検証する。攻撃者のサイトはこのトークンの値を読めない（同一オリジンポリシー）ので、偽のリクエストは弾かれます。演習 `csrf_tokens.py` で、HMAC 署名付きの同期トークン（セッションに紐づき、有効期限を持つ）と、double-submit cookie 方式の定数時間比較を実装します。
 
 ## 5. SSRF（サーバーサイドリクエストフォージェリ）
 
@@ -230,7 +246,24 @@ http://2130706433/ → blocked: 内部向けのアドレスへの接続は禁止
 
 ### 6.2 パストラバーサル
 
-利用者が指定したパスのファイルを返す機能で、`../../etc/passwd` のように公開ディレクトリの外を指定される攻撃です。演習 `safe_files.py` で、パスを解決してベースディレクトリ内に収まるか確認し、**絶対パス・NUL バイト・シンボリックリンクでの脱出** を防ぐファイル配信を実装します。ポイントは、文字列で `..` を数えるのではなく、`resolve()` で実体パスにしてから「ベースの中か」を判定することです。
+利用者が指定したパスのファイルを返す機能で、`../../etc/passwd` のように公開ディレクトリの外を指定される攻撃です。
+
+```python
+from pathlib import Path
+
+def serve_vulnerable(base, user_path):        # 脆弱: 単純に連結する
+    return (Path(base) / user_path).read_bytes()
+# serve_vulnerable("/srv/public", "../../etc/passwd") → 公開範囲の外を読めてしまう
+
+def serve_safe(base, user_path):              # 安全: 解決してベース内か確認
+    base = Path(base).resolve()
+    target = (base / user_path).resolve()      # ".." もシンボリックリンクもたどって実体パスに
+    if base != target and base not in target.parents:
+        raise ValueError("ベースディレクトリの外です")
+    return target.read_bytes()
+```
+
+演習 `safe_files.py` で、この考え方に加えて、**絶対パス・NUL バイト・シンボリックリンクでの脱出** も防ぐファイル配信を実装します。ポイントは、文字列で `..` を数えるのではなく、`resolve()` で実体パスにしてから「ベースの中か」を判定することです（`%2e%2e` などのエンコードや、`..` を含まない絶対パスに、文字列チェックは無力です）。
 
 ### 6.3 その他の重要な脆弱性
 

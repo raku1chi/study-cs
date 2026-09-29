@@ -94,8 +94,10 @@ def verify(
     for secret in secrets:
         expected = compute_signature(secret, msg_id, timestamp, body)
         for candidate in signatures:
-            # == ではなく定数時間の比較。途中で打ち切らないよう、見つかっても全組み合わせを比較する
-            if hmac.compare_digest(expected, candidate):
+            # == ではなく定数時間の比較。途中で打ち切らないよう、見つかっても全組み合わせを比較する。
+            # ヘッダーの値は攻撃者が自由に作れる。compare_digest は非 ASCII の str を比較できず
+            # TypeError になるので、bytes にしてから比べる（どんな値でも「不一致」として扱える）
+            if hmac.compare_digest(expected.encode("ascii"), candidate.encode("utf-8", "replace")):
                 matched = True
     if not matched:
         raise SignatureMismatchError("署名が一致しません")
