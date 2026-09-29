@@ -119,8 +119,12 @@ def index_statements() -> list[str]:
         "CREATE INDEX idx_orders_customer_created ON orders (customer_id, created_at)",
         # 列に関数をかけた条件は、同じ式のインデックス（式インデックス）でしか使えない
         "CREATE INDEX idx_customers_lower_email ON customers (lower(email))",
-        # pending は全体の約 1%。その行だけを持つ部分インデックスは小さく、created_at 順に並んでいる
-        "CREATE INDEX idx_orders_pending ON orders (created_at) WHERE status = 'pending'",
+        # pending は全体の約 1%。その行だけを持つ部分インデックスは小さく、created_at 順に並んでいる。
+        # SELECT する customer_id も入れてカバリングにする（id は rowid なので索引に含まれる）。
+        # (created_at) だけの部分インデックスでは、SQLite 3.45 はこれを使うが、3.50 は
+        # idx_orders_status_customer_total での検索と並べ替え（USE TEMP B-TREE）を選んでしまう。
+        # 明らかに有利なインデックスにしておくと、オプティマイザのバージョンが変わっても計画が安定する
+        "CREATE INDEX idx_orders_pending ON orders (created_at, customer_id) WHERE status = 'pending'",
         # created_at の範囲で絞り、total まで索引に入れればカバリングになる。id（rowid）を
         # 2 列目に明示すると (created_at, id) の順に並ぶので、キーセットページネーションにも使える
         "CREATE INDEX idx_orders_created_id_total ON orders (created_at, id, total)",

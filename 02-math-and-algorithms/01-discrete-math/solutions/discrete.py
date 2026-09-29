@@ -266,8 +266,9 @@ def crt(residues: Sequence[int], moduli: Sequence[int]) -> int:
 def rsa_generate(p: int, q: int, e: int = 65537) -> RSAKey:
     if p == q:
         raise ValueError("p と q は異なる素数にしてください")
-    if not (is_prime(p) and is_prime(q)):
-        raise ValueError(f"p と q は素数にしてください: p={p}, q={q}")
+    # p = 2 だと d mod (p-1) = 0 となり、CRT による復号で c^0 = 1 になって誤るので除外する
+    if not (p > 2 and q > 2 and is_prime(p) and is_prime(q)):
+        raise ValueError(f"p と q は 3 以上の素数にしてください: p={p}, q={q}")
     phi = (p - 1) * (q - 1)
     if not 1 < e < phi:
         raise ValueError(f"e は 1 < e < φ(n) = {phi} の範囲で指定してください: {e}")

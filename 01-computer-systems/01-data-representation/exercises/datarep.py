@@ -70,7 +70,7 @@ def from_base(s: str, base: int) -> int:
 def to_twos_complement(n: int, bits: int) -> str:
     """整数 n を bits ビットの 2 の補数表現（'0'/'1' の文字列、長さ bits）に変換する。
 
-    - bits <= 0 のときは ValueError。
+    - bits <= 0 のときは ValueError（この検査を最初に行う）。
     - n が bits ビットの符号付き整数の範囲（-2^(bits-1) 〜 2^(bits-1)-1）外なら OverflowError。
 
     >>> to_twos_complement(5, 8)
@@ -110,7 +110,7 @@ def add_signed(a: int, b: int, bits: int) -> tuple[int, bool]:
     戻り値は (結果, オーバーフローしたか)。
     - 結果は 2^bits を法として回り込んだ値を、符号付き整数として解釈したもの。
     - オーバーフローとは「数学的な和 a + b が bits ビットの符号付き範囲に収まらないこと」。
-    - a または b がそもそも範囲外なら OverflowError、bits <= 0 なら ValueError。
+    - bits <= 0 なら ValueError（この検査を最初に行う）。a または b がそもそも範囲外なら OverflowError。
 
     >>> add_signed(100, 27, 8)
     (127, False)

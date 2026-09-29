@@ -83,7 +83,7 @@ CREATE TABLE order_items (order_id INTEGER NOT NULL REFERENCES orders (order_id)
                           PRIMARY KEY (order_id, product_id));
 ```
 
-本章の SQL の実行結果は、Python 3 に同梱の SQLite 3.45 で実行したものです（`python3 exercises/sql_practice.py` の `print_query` や、`sqlite3` コマンドで試せます）。PostgreSQL と挙動が異なる点は、PostgreSQL 16 で確かめた結果を添えています。
+本章の SQL の実行結果は、Python 3 の `sqlite3` モジュールから SQLite 3.45 で実行したものです（`python3 exercises/sql_practice.py` の `print_query` や、`sqlite3` コマンドで試せます。使われる SQLite のバージョンは環境によって異なり、`python3 -c "import sqlite3; print(sqlite3.sqlite_version)"` で確かめられます）。PostgreSQL と挙動が異なる点は、PostgreSQL 16 で確かめた結果を添えています。
 
 ### 2.2 キー
 
@@ -385,7 +385,7 @@ category_id | name           | depth
 
 - `PARTITION BY`: ウィンドウを区切る（GROUP BY のように。ただし行は減らない）
 - `ORDER BY`: ウィンドウの中の順序
-- フレーム: 集約関数を使うときに、ウィンドウの中のどの範囲を対象にするか
+- フレーム: 集約関数（や `FIRST_VALUE`・`LAST_VALUE`）で、ウィンドウの中のどの範囲を対象にするか（順位付けの関数や `LAG`・`LEAD` はフレームの影響を受けない）
 
 **順位付けの 3 つの関数** は、同順位の扱いが異なります。
 
@@ -450,7 +450,7 @@ ORDER BY customer_id, ordered_at;
 
 各顧客の最初の注文には前の行がないので NULL になります。日付関数は方言の差が大きい部分で、PostgreSQL なら `ordered_at::date - LAG(ordered_at::date) OVER w` のように書きます。
 
-**フレームの既定値の罠**: 集約関数に `OVER (ORDER BY ...)` を付けると累計になりますが、既定のフレームは `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` です。RANGE は「ORDER BY の値が同じ行」をまとめて扱うため、同じ値の行があると、それらはすべて同じ累計になります。
+**フレームの既定値の罠**: 集約関数に `OVER (ORDER BY ...)` を付けると累計になりますが、ORDER BY を書いたときの既定のフレームは `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` です（ORDER BY がなければパーティション全体）。RANGE は「ORDER BY の値が同じ行」をまとめて扱うため、同じ値の行があると、それらはすべて同じ累計になります。
 
 ```sql
 WITH t(day, amount) AS (VALUES ('01', 10), ('02', 20), ('02', 30), ('03', 40))
@@ -474,6 +474,8 @@ day | amount | default_frame | rows_frame | moving_avg2
 ```
 
 1 行ずつ累積したいなら `ROWS` を明示します（その場合、同値の行の並び順が不定なので、ORDER BY も一意にします）。`ROWS BETWEEN 6 PRECEDING AND CURRENT ROW` とすれば 7 日移動平均のような計算もできます。
+
+同じ罠は `LAST_VALUE` にもあります。上の `t` で `LAST_VALUE(amount) OVER (ORDER BY day)` を計算すると、パーティションの最後の値（40）ではなく、「現在の行と、ORDER BY の値が同じ行まで」の最後の値（10, 30, 30, 40）になります。パーティション全体の最後の値が欲しいなら、`ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` を指定します。
 
 ### 4.8 集合演算
 
@@ -514,7 +516,7 @@ NULL = NULL | NULL <> 1 | NULL IS NULL | 3 IN (1, 2, NULL) | 3 NOT IN (1, 2, NUL
        NULL |      NULL |            1 |              NULL |                  NULL |          0 |         1
 ```
 
-（SQLite は真偽値を 1 / 0 で、UNKNOWN を NULL で表示します。PostgreSQL では t / f / 空欄で表示されます。）
+（SQLite は真偽値を 1 / 0 で、UNKNOWN を NULL で表示します。PostgreSQL では AND・OR の引数に整数を使えないので `NULL AND false`・`NULL OR true` のように書き、結果は t / f / 空欄で表示されます。）
 
 最も重要な規則は、**WHERE・ON・HAVING は結果が TRUE の行だけを残す** ことです。UNKNOWN の行は FALSE と同じく捨てられます。一方、**CHECK 制約は FALSE の行だけを拒否し、UNKNOWN は通す** ので、`CHECK (price >= 0)` は NULL の price を拒否しません（NULL を拒否したければ NOT NULL を併用します）。
 

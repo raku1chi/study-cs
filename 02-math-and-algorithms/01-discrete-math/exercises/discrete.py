@@ -373,7 +373,10 @@ def rsa_generate(p: int, q: int, e: int = 65537) -> RSAKey:
     - n = p*q、φ(n) = (p-1)(q-1)、d = e^{-1} mod φ(n)。
       （実際の規格では λ(n) = lcm(p-1, q-1) を使うことが多い。どちらでも正しく復号できるが、
        この演習では φ(n) を使うこと）
-    - p == q、p または q が素数でない、1 < e < φ(n) でない、gcd(e, φ(n)) != 1 のいずれかなら ValueError。
+    - p == q、p または q が 3 以上の素数（奇素数）でない、1 < e < φ(n) でない、
+      gcd(e, φ(n)) != 1 のいずれかなら ValueError。
+      （p = 2 を許すと d mod (p-1) = 0 になり、rsa_decrypt_crt の手順が偶数の c で誤る。
+       本物の RSA の p, q も巨大な奇素数である）
 
     >>> rsa_generate(61, 53, 17)
     RSAKey(n=3233, e=17, d=2753, p=61, q=53)

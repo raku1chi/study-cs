@@ -622,7 +622,7 @@ Go で書かれた API サーバーが、Kubernetes 上でメモリ上限 1 GiB 
 
 - Richard Jones, Antony Hosking, Eliot Moss "The Garbage Collection Handbook"（第 2 版 2023, CRC Press。第 1 版の邦訳『ガベージコレクション 自動的メモリ管理を構成する理論と実装』翔泳社）— GC のアルゴリズムを網羅した決定版。参照カウント、マーク＆スイープ、コピー、世代別、並行 GC、ライトバリアまで。
 - 中村成洋・相川光『ガベージコレクションのアルゴリズムと実装』（秀和システム）— 日本語で読める GC の入門書。主要なアルゴリズムと、実際の処理系での実装例を解説している。
-- Randal E. Bryant, David R. O'Hallaron "Computer Systems: A Programmer's Perspective"（邦訳『コンピュータ・システム プログラマの視点から』マイナビ出版）第 9 章 — 仮想メモリと、malloc の実装（暗黙のフリーリスト、境界タグ、分離フリーリスト）。演習 2 の背景。
+- Randal E. Bryant, David R. O'Hallaron "Computer Systems: A Programmer's Perspective"（邦訳『コンピュータ・システム プログラマの視点から』丸善出版）第 9 章 — 仮想メモリと、malloc の実装（暗黙のフリーリスト、境界タグ、分離フリーリスト）。演習 2 の背景。
 - "The Rust Programming Language"（Rust 公式の入門書。無料で公開されており、日本語訳もある）の所有権の章 — 所有権・借用・ライフタイムを最も分かりやすく説明している。
 - Go 公式ドキュメント "A Guide to the Go Garbage Collector" — `GOGC` と `GOMEMLIMIT` の意味を、図を使って丁寧に説明している。Go を本番で運用するなら必読。
 - Oracle "HotSpot Virtual Machine Garbage Collection Tuning Guide" — JVM の各 GC の特徴と設定の公式ガイド。使っている JDK のバージョンのものを読むこと。

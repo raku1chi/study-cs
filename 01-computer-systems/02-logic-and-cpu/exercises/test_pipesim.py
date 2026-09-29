@@ -21,7 +21,7 @@ def store(*srcs):
 
 NOP = Instr("nop")
 
-# Hennessy & Patterson の教科書でおなじみの例: a = b + e; c = b + f;
+# Patterson & Hennessy『コンピュータの構成と設計』でおなじみの例: a = b + e; c = b + f;
 #   lw t1, b / lw t2, e / add t3, t1, t2 / sw t3, a / lw t4, f / add t5, t1, t4 / sw t5, c
 HP_ORIGINAL = [
     load("t1", "gp"), load("t2", "gp"), alu("t3", "t1", "t2"), store("t3", "gp"),
