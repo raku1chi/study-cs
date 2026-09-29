@@ -22,7 +22,7 @@
 | 2.4 | [基本データ構造](04-basic-data-structures/README.md) | 本文 4h ＋ 演習 6h | `structures.py`（リングバッファ、連鎖法と線形探査のハッシュマップ、LRU キャッシュ、ブルームフィルタ）、記述: データ構造の選定 | 配列, 連結リスト, リングバッファ, ハッシュテーブル, HashDoS, LRU キャッシュ, ブルームフィルタ |
 | 2.5 | [木・ヒープ・グラフ](05-trees-heaps-graphs/README.md) | 本文 5h ＋ 演習 8h | `trees.py`（二分探索木、ヒープ、トライ木）・`graphs.py`（BFS、トポロジカルソート、ダイクストラ法、Union-Find、依存グラフの分析）、記述: B+木のインデックスの見積もり | 二分探索木, B+木, ヒープ, トライ木, BFS/DFS, トポロジカルソート, ダイクストラ法, Union-Find |
 | 2.6 | [アルゴリズム設計技法](06-algorithm-design/README.md) | 本文 5h ＋ 演習 9h | `algorithms.py`（各種ソート、貪欲法、編集距離と行単位の diff、ナップサック、バックトラッキング、外部ソート）、記述: 設計技法の選択 | 分割統治, 貪欲法, 動的計画法, バックトラッキング, 乱択アルゴリズム, 外部ソート |
-| 2.7 | [計算理論 — 計算できること・できないこと](07-theory-of-computation/README.md) | 本文 5h ＋ 演習 8h | `automata.py`（DFA、ε 遷移つき NFA、部分集合構成法、スタックによる括弧の対応）・`thompson_regex.py`（Thompson の構成法による線形時間の正規表現エンジンと、バックトラッキング型との比較）、記述: NP 困難な問題への対処 | 有限オートマトン, 正規言語, Thompson の構成法, ReDoS, チューリング機械, 停止問題, ライスの定理, P と NP, NP 完全, SAT ソルバ |
+| 2.7 | [計算理論 — 計算できること・できないこと](07-theory-of-computation/README.md) | 本文 5h ＋ 演習 8h | `automata.py`（DFA、ε 遷移つき NFA、部分集合構成法、スタックによる括弧の対応）・`thompson_regex.py`（Thompson の構成法による線形時間の正規表現エンジンと、バックトラッキング型との比較）、記述: NP 困難な問題への対処 | 有限オートマトン, 正規言語, Thompson の構成法, ReDoS, チューリング機械, 停止性問題, ライスの定理, P と NP, NP 完全, SAT ソルバー |
 
 合計の目安は、本文 約 32 時間、演習 約 46 時間です。コード演習は `python3 tools/check.py 2` でまとめてテストできます（章を指定するなら `python3 tools/check.py 2.3` のように）。
 

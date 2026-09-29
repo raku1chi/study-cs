@@ -22,7 +22,7 @@
 
 データ構造の選択を誤ったときの損失は、「少し遅い」では済まないことがよくあります。
 
-- **キューに list を使うだけで二乗時間になる**: Python の `list.pop(0)` は先頭の要素を取り出すたびに残り全部を 1 つずつ前に詰めるので O(n) です。この章の計測では、10 万件の処理で `collections.deque` の約 150 倍、20 万件では約 360 倍遅くなりました（3.2 節）。件数が 2 倍になると時間は 4 倍になり、本番のデータ量で初めて問題が表面化します。
+- **キューに list を使うだけで二乗時間になる**: Python の `list.pop(0)` は先頭の要素を取り出すたびに残り全部を 1 つずつ前に詰めるので O(n) です。[2.3](../03-complexity/README.md) の 8 節の計測では、10 万件を取り出すのに `collections.deque` の約 180 倍の時間がかかりました。件数が 2 倍になると時間は 4 倍になるので、テストでは気づかず、本番のデータ量で初めて問題が表面化します。
 - **ハッシュテーブルは攻撃で遅くなる**: 2003 年に Crosby と Wallach は、ハッシュ値が衝突する入力を意図的に送り込むと、平均 O(1) のハッシュテーブルが O(n) に劣化し、少ない通信量でサーバーの CPU を使い切らせられることを示しました（"Denial of Service via Algorithmic Complexity Attacks", USENIX Security 2003）。2011 年には Klink と Wälde が、多くの言語・Web フレームワークが HTTP リクエストのパラメータをハッシュテーブルに格納するため、この攻撃（HashDoS）が広く通用することを発表し、Python・PHP・Java などが相次いで対策を入れました。
 - **同じ O(n) でも 100 倍違う**: 1,000 万要素を順にたどる処理を C で書いて計測すると、配列なら約 13 ミリ秒、メモリ上に散らばった連結リストなら約 1.4 秒かかりました（1.2 節）。計算量はどちらも O(n) です。差を生んだのは、[1.3 メモリ階層とキャッシュ](../../01-computer-systems/03-memory-hierarchy/README.md) で学ぶキャッシュです。
 - **「たぶんある」を安く知る技術がインフラを支えている**: RocksDB や Cassandra のようなデータベースは、ディスク上のファイルごとにブルームフィルタを持ち、「このファイルにはキーが確実にない」と分かれば読みに行きません。キーが存在しない検索のディスク I/O を大きく減らせます（[6.4 ストレージエンジンと障害回復](../../06-databases/04-storage-and-recovery/README.md)）。
@@ -184,34 +184,7 @@ int main(void) {
 
 **キュー（queue）** は、最初に入れたものを最初に取り出す（First In, First Out）構造です。ジョブの処理待ち行列、幅優先探索、ネットワークのパケットの送信待ちなどで使います。
 
-Python でキューを `list` の `append()` と `pop(0)` で作ると、`pop(0)` が O(n) なので全体が O(n²) になります。`collections.deque` と比べてみましょう。
-
-```python
-import time
-from collections import deque
-
-for n in (10_000, 100_000, 200_000):
-    lst = list(range(n))
-    t = time.perf_counter()
-    while lst:
-        lst.pop(0)          # 先頭から取り出す: 残り全要素を 1 つずつ前に詰める O(n)
-    t_list = time.perf_counter() - t
-
-    dq = deque(range(n))
-    t = time.perf_counter()
-    while dq:
-        dq.popleft()        # O(1)
-    t_deque = time.perf_counter() - t
-    print(f"n={n:>7,}: list.pop(0) {t_list:.3f} 秒 / deque.popleft() {t_deque:.3f} 秒")
-```
-
-```text
-n= 10,000: list.pop(0) 0.007 秒 / deque.popleft() 0.000 秒
-n=100,000: list.pop(0) 0.905 秒 / deque.popleft() 0.006 秒
-n=200,000: list.pop(0) 3.624 秒 / deque.popleft() 0.010 秒
-```
-
-件数が 2 倍になると `list.pop(0)` の時間は 4 倍になっています。二乗時間の典型的な症状です。テストデータが小さいと気づけないので、**キューには最初から `deque` を使う** と決めておきましょう。
+Python でキューを `list` の `append()` と `pop(0)` で作ると、`pop(0)` のたびに残りの要素を全部ずらすので、全体が O(n²) になります。[2.3 計算量とアルゴリズム解析](../03-complexity/README.md) の 8 節の計測では、10 万件を取り出すのに `list.pop(0)` は約 0.9 秒、`deque.popleft()` は約 5 ミリ秒で、件数を 2 倍にすると前者だけが 4 倍になりました。二乗時間の典型的な症状で、テストデータが小さいと気づけません。**キューには最初から `collections.deque` を使う** と決めておきましょう。
 
 ### 3.3 両端キュー（deque）
 
