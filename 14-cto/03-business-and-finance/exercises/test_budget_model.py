@@ -50,7 +50,7 @@ class TestCosts(unittest.TestCase):
     def test_hire_cost_timeline(self):
         h = Hire("backend", 1200, 3, agency_fee_rate=0.35)
         costs = [hire_cost_in_month(h, m, EASY) for m in range(1, 6)]
-        # 入社前 0、入社月は 130 + 一時費用 50 + 紹介手数料 1200 × 0.35 = 420、その後 130
+        # 入社前 0、入社月は 130 + 一時費用 50 + 紹介手数料 420（1200 × 0.35）= 600、その後 130
         for got, want in zip(costs, [0, 0, 600, 130, 130]):
             self.assertAlmostEqual(got, want)
 

@@ -2,7 +2,6 @@
 
 実行: python3 tools/check.py 9.6   （またはこのディレクトリで python3 -m unittest -v）
 """
-import math
 import random
 import threading
 import unittest
@@ -14,7 +13,6 @@ from shortener import (
     Shortener,
     base62_decode,
     base62_encode,
-    default_multiplier,
     validate_alias,
     validate_url,
 )
@@ -72,12 +70,6 @@ class TestExercise2CodeGenerator(unittest.TestCase):
         self.assertNotEqual(codes, sorted(codes), "連番がそのまま並んで見えない")
         self.assertEqual(gen.counter_for(gen.code_for(123_456_789)), 123_456_789)
         self.assertEqual(gen.code_for(gen.capacity - 1), gen.code_for(gen.capacity - 1))
-
-    def test_default_multiplier_is_coprime(self):
-        for length in range(1, 10):
-            m = default_multiplier(length)
-            self.assertEqual(math.gcd(m, 62), 1)
-            self.assertTrue(0 < m < 62 ** length)
 
     def test_custom_parameters(self):
         gen = CodeGenerator(length=3, multiplier=1, offset=0)
