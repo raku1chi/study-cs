@@ -544,7 +544,7 @@ python3 tools/check.py -v 6.3     # 詳しい出力
 
 ## さらに学ぶために
 
-- Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』オライリー・ジャパン）第 7 章 — 分離レベルと異常、スナップショット分離、SSI を最も分かりやすく解説した章。当直の医師の例もここから。
+- Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』オライリー・ジャパン）初版の第 7 章 — 分離レベルと異常、スナップショット分離、SSI を最も分かりやすく解説した章。当直の医師の例もここから。
 - Hal Berenson ほか "A Critique of ANSI SQL Isolation Levels"（SIGMOD 1995）— SQL 標準の分離レベルの定義の問題と、スナップショット分離を初めて整理した論文。
 - Michael J. Cahill, Uwe Röhm, Alan D. Fekete "Serializable Isolation for Snapshot Databases"（SIGMOD 2008）と、Dan R. K. Ports, Kevin Grittner "Serializable Snapshot Isolation in PostgreSQL"（VLDB 2012）— SSI の原論文と、実際の DBMS への実装の記録。
 - PostgreSQL 公式ドキュメント「同時実行制御」の章 — 各分離レベルの正確な挙動、明示的なロック、アプリケーションでの注意点の一次資料。

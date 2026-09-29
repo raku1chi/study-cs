@@ -230,7 +230,7 @@ SELECT substr(ordered_at, 1, 7) AS month, COUNT(*) AS n FROM orders GROUP BY mon
 ERROR:  column "n" does not exist
 ```
 
-SQLite や MySQL は WHERE や HAVING でも別名を受け付けますが、移植性がないので、**標準の書き方（`HAVING COUNT(*) >= 3` のように式を書く）に揃えておく** のが無難です。
+一方、SQLite は WHERE と HAVING でも別名を受け付け、MySQL は HAVING では受け付けます（WHERE では受け付けません）。こうした拡張には移植性がないので、**標準の書き方（`HAVING COUNT(*) >= 3` のように式を書く）に揃えておく** のが無難です。
 
 ### 4.3 結合
 

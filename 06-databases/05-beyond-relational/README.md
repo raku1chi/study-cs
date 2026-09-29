@@ -37,7 +37,7 @@
 | グラフ | 頂点と辺（とその属性） | 何段もの関係をたどる問い合わせ | 大量の集計、単純な一覧 | Neo4j、Amazon Neptune |
 | 時系列 | 時刻と測定値の列 | 時刻での範囲の集計、圧縮、古いデータの間引き | 任意の更新、複雑な関連 | TimescaleDB、InfluxDB、Prometheus |
 | 全文検索 | 文書と転置インデックス | 語による検索と関連度の順位付け、ファセット | 正の値（source of truth）としての保存、トランザクション | Elasticsearch、OpenSearch |
-| ベクトル | 数値ベクトル（埋め込み） | 意味の近さによる近傍検索 | 厳密な一致の検索、更新の多いデータ | pgvector、専用のベクトル DB |
+| ベクトル | 数値ベクトル（埋め込み） | 意味の近さによる近傍検索 | 厳密な一致の検索。頻繁な更新は索引の維持の負担になる | pgvector、専用のベクトル DB |
 
 どのモデルも「何かを得意にするために、何かを諦めた」設計です。この節以降では、主要なモデルについて、その取引の中身を見ていきます。
 
@@ -81,14 +81,16 @@ PostgreSQL の `jsonb` 型は、JSON を解析済みのバイナリ形式で保�
 CREATE INDEX products_attrs_gin ON products USING gin (attrs jsonb_path_ops);
 
 EXPLAIN ANALYZE SELECT id, name FROM products WHERE attrs @> '{"tags": ["limited"], "size": "XL"}';
- Bitmap Heap Scan on products  (cost=76.65..1072.06 rows=353 width=22) (actual time=0.511..1.421 rows=489 loops=1)
+ Bitmap Heap Scan on products  (cost=77.17..1279.82 rows=453 width=22) (actual time=0.613..2.365 rows=489 loops=1)
    Recheck Cond: (attrs @> '{"size": "XL", "tags": ["limited"]}'::jsonb)
-   ->  Bitmap Index Scan on products_attrs_gin  (... rows=489 loops=1)
+   Heap Blocks: exact=444
+   ->  Bitmap Index Scan on products_attrs_gin  (cost=0.00..77.06 rows=453 width=0) (actual time=0.512..0.512 rows=489 loops=1)
          Index Cond: (attrs @> '{"size": "XL", "tags": ["limited"]}'::jsonb)
- Execution Time: 1.467 ms
+ Planning Time: 0.189 ms
+ Execution Time: 2.410 ms
 ```
 
-「共通の列は通常の列、本当に可変な属性だけ JSONB」という組み合わせは、RDB の制約とトランザクションを保ちながら柔軟性を得る実用的な方法で、6.1 章の EAV アンチパターンの代わりとしても使えます。
+「共通の列は通常の列、本当に可変な属性だけ JSONB」という組み合わせは、RDB の制約とトランザクションを保ちながら柔軟性を得る実用的な方法で、[6.1](../01-relational-model-and-sql/README.md) の 7.3 節で見た EAV アンチパターンの代わりとしても使えます。
 
 ## 3. キーバリューとワイドカラム — アクセスパターンから設計する
 
@@ -232,16 +234,16 @@ PostgreSQL の拡張 pgvector は、ベクトル型と IVFFlat・HNSW の索引�
 | 重視するもの | 遅延、同時実行、整合性 | スループット、走査の速さ |
 | 向いている格納方式 | 行指向（[6.4](../04-storage-and-recovery/README.md)） | 列指向 |
 
-**列指向（column-oriented）** のストレージは、列ごとに値をまとめて格納します。集計に必要な列だけを読めばよく、同じ列の値は似ているので圧縮がよく効きます。演習 3 のモデルで、2 万行 × 6 列の売上データから `SELECT region, SUM(amount) FROM sales WHERE year = ? GROUP BY region` に必要な 3 列を読むバイト数を計算すると、次のようになりました（演習 3 の解答例で計算した値）。
+**列指向（column-oriented）** のストレージ（[6.4](../04-storage-and-recovery/README.md) の 7 節）は、列ごとに値をまとめて格納します。集計に必要な列だけを読めばよく、同じ列の値は似ているので圧縮がよく効きます。演習 3 のモデルで、2 万行 × 6 列の売上データ（地域は 8 種類、年は 3 種類）から `SELECT region, SUM(amount) FROM sales WHERE year = ? GROUP BY region` に必要な 3 列を読むバイト数を計算すると、次のようになりました（演習 3 の解答例で計算した値）。
 
 | 格納方式 | 読むバイト数 | 行指向との比 |
 |---|---|---|
 | 行指向（6 列すべてを読む） | 1,324,882 | 1 |
 | 列指向・符号化なし（3 列だけを読む） | 527,731 | 約 1/2.5 |
-| 列指向・region は辞書符号化、year は RLE（並べ替えなし） | 327,951 | 約 1/4 |
-| 列指向・(year, region) の順に並べて両方 RLE | 160,381 | 約 1/8.3 |
+| 列指向・region と year を辞書符号化（並べ替えなし） | 172,607 | 約 1/7.7 |
+| 列指向・(year, region) の順に並べて両方を RLE | 160,381 | 約 1/8.3 |
 
-並べ替えたデータでは、region 列は 20 万バイト強から 345 バイトに、year 列は 16 万バイトから 36 バイトにまで縮み、読むバイト数のほとんどは圧縮の効かない amount 列になりました。逆に、並んでいないデータに RLE を使うと、かえって大きくなります。**圧縮の効果は、データの並び順と値の種類の数で決まる** のです。実際の列指向の DB も、データを並べ替えて格納したり、ブロックごとの最小値・最大値を記録して読まなくてよいブロックを飛ばしたりすることで、この効果を最大化しています。さらに、演習 3 の最後の関数のように、符号化したまま集計する（必要になるまで文字列に戻さない）ことで、CPU の処理も減らしています。
+辞書符号化では、8 種類の region は 3 ビット、3 種類の year は 2 ビットの符号になり、region 列は 207,731 バイトから 7,583 バイトに、year 列は 160,000 バイトから 5,024 バイトに縮みます。(year, region) の順に並べたデータに RLE を使うと、region 列は 345 バイト、year 列は 36 バイトにまでなり、読むバイト数のほとんどは圧縮の効かない amount 列（160,000 バイト）になりました。逆に、並んでいないデータに RLE を使うと、連続がほとんどないので、かえって大きくなります（year 列は 160,368 バイト、region 列は 251,541 バイト）。**圧縮の効果は、データの並び順と値の種類の数で決まる** のです。実際の列指向の DB も、データを並べ替えて格納したり、ブロックごとの最小値・最大値を記録して読まなくてよいブロックを飛ばしたりすることで、この効果を最大化しています。さらに、演習 3 の最後の関数のように、符号化したまま集計する（必要になるまで文字列に戻さない）ことで、CPU の処理も減らしています。
 
 分析用のデータストアの代表は、BigQuery（Google の Dremel が基盤）、Snowflake、Amazon Redshift といったクラウドのデータウェアハウス、ClickHouse、組み込み型の DuckDB です。オブジェクトストレージ上の Parquet ファイルに、Apache Iceberg・Delta Lake・Apache Hudi といったテーブル形式でトランザクションやスキーマの管理を加えた **レイクハウス** も広がっています。本番の OLTP の DB で重い集計を実行すると、オンラインの処理を遅くするので、分析用のデータは CDC やバッチでこれらのデータ基盤に移すのが原則です（[12.1 データ基盤とデータエンジニアリング](../../12-data-and-ai/01-data-engineering/README.md)）。
 
@@ -250,9 +252,9 @@ PostgreSQL の拡張 pgvector は、ベクトル型と IVFFlat・HNSW の索引�
 RDB の弱点は、書き込みを 1 台のプライマリで受け付けるため、書き込みの規模に上限があることでした。アプリケーションで DB を分割（シャーディング）すると、シャードをまたぐ結合やトランザクションを失います。**NewSQL（分散 SQL）** は、SQL とトランザクションを保ったまま、データを自動的に分割して多数のノードに分散させます。
 
 - **Google Spanner**（OSDI 2012 の論文）: 原子時計と GPS で時刻の誤差の範囲を保証する TrueTime を使い、世界規模で分散したデータに対して、外部一貫性（コミットの順序が実時間の順序と一致する）を持つトランザクションを実現した。
-- **CockroachDB**（PostgreSQL 互換のプロトコル）、**TiDB**（MySQL 互換）、**YugabyteDB**（PostgreSQL 互換）: データを範囲ごとに分割し、各範囲を Raft（[7.4](../../07-distributed-systems/04-consensus-and-coordination/README.md)）で複製する。
+- **CockroachDB**（PostgreSQL 互換のプロトコル）、**TiDB**（MySQL 互換）、**YugabyteDB**（PostgreSQL 互換）: データを多数の小さな単位（CockroachDB の range、TiDB の Region、YugabyteDB の tablet）に分割し、各単位を Raft（[7.4](../../07-distributed-systems/04-consensus-and-coordination/README.md)）で複製する。
 
-トレードオフもはっきりしています。分割をまたぐトランザクションはノード間の合意を必要とするので、単一ノードの RDB より遅延が大きくなります（特に地理的に離れたリージョンをまたぐ場合）。互換性をうたっていても、既存の RDB のすべての機能や性能特性が同じとは限りません。運用の知見を持つ人も、既存の RDB ほど多くありません。「1 台の大きな PostgreSQL に収まらない書き込みの規模がある」「複数のリージョンで書き込みを受け付ける必要がある」といった明確な理由があるときに検討するのが妥当です。なお、Amazon Aurora のように、ストレージを分散・多重化しつつ書き込みは 1 台のインスタンスで受け付ける、クラウド向けに作り直された RDB もあり、これは NewSQL とは別の設計の方向性です。
+トレードオフもはっきりしています。分割をまたぐトランザクションはノード間の合意を必要とするので、単一ノードの RDB より遅延が大きくなります（特に地理的に離れたリージョンをまたぐ場合）。互換性をうたっていても、既存の RDB のすべての機能や性能特性が同じとは限りません。運用の知見を持つ人も、既存の RDB ほど多くありません。「1 台の大きな PostgreSQL に収まらない書き込みの規模がある」「複数のリージョンで書き込みを受け付ける必要がある」といった明確な理由があるときに検討するのが妥当です。なお、Amazon Aurora の標準的な構成のように、ストレージを分散・多重化しつつ、書き込みは 1 台のインスタンスで受け付ける、クラウド向けに作り直された RDB もあります。これは NewSQL とは別の設計の方向性です。
 
 ## 8. データストアの選定
 
@@ -454,7 +456,7 @@ k1 は、語の出現回数（tf）の効果がどれだけ速く飽和するか
 
 ## さらに学ぶために
 
-- Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』オライリー・ジャパン）第 2・3 章 — データモデル（リレーショナル・ドキュメント・グラフ）と、行指向・列指向のストレージの比較。この章全体の背景となる本。
+- Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』オライリー・ジャパン）のデータモデルとストレージの章（初版では第 2・3 章）— データモデル（リレーショナル・ドキュメント・グラフ）と、行指向・列指向のストレージの比較。この章全体の背景となる本。
 - Alex DeBrie "The DynamoDB Book" — アクセスパターンから単一テーブル設計を行う手順を、多くの例で解説した実践書。
 - Stephen E. Robertson, Hugo Zaragoza "The Probabilistic Relevance Framework: BM25 and Beyond"（Foundations and Trends in Information Retrieval, 2009）— BM25 の理論的な背景をまとめた解説。
 - Christopher D. Manning, Prabhakar Raghavan, Hinrich Schütze "Introduction to Information Retrieval"（Cambridge University Press）— 転置インデックス・ブール検索・ランキングの教科書。著者のサイトで全文が公開されている。
@@ -468,6 +470,6 @@ k1 は、語の出現回数（tf）の効果がどれだけ速く飽和するか
 - ドキュメントモデルでは埋め込みと参照を判断し、スキーマ・オン・リードはスキーマの管理がアプリケーションに移ることを意味する。PostgreSQL の JSONB は、RDB の中での実用的な柔軟性を与える。
 - DynamoDB 型のストアでは、アクセスパターンを先に列挙し、1 回の問い合わせで満たせるようにキーと GSI を設計する。後からの変更は大きい。
 - 全文検索は転置インデックスと BM25（IDF・tf の飽和・長さの正規化）で成り立ち、日本語は形態素解析と n-gram の使い分けが鍵になる。ベクトル検索は ANN（HNSW・IVF・PQ）で再現率と速さを交換する。
-- OLAP には列指向が向き、必要な列だけを読み、並べ替えと符号化で読むバイト数を桁違いに減らす。分析は本番の OLTP から切り離したデータ基盤で行う。
+- OLAP には列指向が向き、必要な列だけを読み、並べ替えと符号化で読むバイト数を大幅に減らす（この章の例では約 1/8）。分析は本番の OLTP から切り離したデータ基盤で行う。
 - NewSQL は SQL とトランザクションを保ったまま水平に分散するが、遅延・互換性・運用の人材がトレードオフになる。
 - 選定は、データモデルの適合・一貫性・規模・遅延・運用・技能・コスト・ロックイン・法令の観点で行い、ADR に残す。データストアを増やすたびに運用・同期・組織のコストが増えることを忘れない。

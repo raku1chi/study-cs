@@ -454,7 +454,7 @@ PostgreSQL の MVCC では、行の各バージョンが「どのトランザク
 
 ## さらに学ぶために
 
-- Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』オライリー・ジャパン）第 3 章 — ハッシュ索引（Bitcask）から SSTable・LSM 木・B 木・列指向ストレージまで、この章の流れの原典といえる解説。
+- Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』オライリー・ジャパン）初版の第 3 章 — ハッシュ索引（Bitcask）から SSTable・LSM 木・B 木・列指向ストレージまで、この章の流れの原典といえる解説。
 - Alex Petrov "Database Internals"（O'Reilly）— ページの構造、B 木の変種、LSM 木とコンパクション、回復を実装の視点で詳しく解説。
 - C. Mohan ほか "ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks Using Write-Ahead Logging"（ACM TODS, 1992）— WAL による回復の古典。演習 3 の元になった考え方。
 - Patrick O'Neil ほか "The Log-Structured Merge-Tree (LSM-Tree)"（Acta Informatica, 1996）と、Justin Sheehy, David Smith "Bitcask: A Log-Structured Hash Table for Fast Key/Value Data"（Basho, 2010）— 演習 1・2 の元になった設計。Bitcask の論文は数ページで読みやすい。
