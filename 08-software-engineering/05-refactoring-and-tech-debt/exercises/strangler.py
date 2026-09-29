@@ -41,9 +41,11 @@ path が 接頭辞 + "/" で始まる。接頭辞 "/" はすべてに一致す�
       min_canary_samples 以上、かつエラーの割合が max_error_rate 以下でなければ InvalidTransition。
       percent は今より大きい 1〜100 の整数（100 または省略で modern）。
     - modern → retired: 旧実装を撤去してよい状態。**ここからは rollback できない**。
+      retired からの promote も InvalidTransition（移行はもう完了している）。
     - rollback: shadow・canary・modern から legacy に戻し、そのルートの統計をリセットする。
       legacy・retired からは InvalidTransition。
     - 登録されていない接頭辞を指定したら KeyError。percent が範囲外なら ValueError。
+      percent の検査（ValueError）は、標本数・割合の検査（InvalidTransition）より先に行う。
 """
 from __future__ import annotations
 

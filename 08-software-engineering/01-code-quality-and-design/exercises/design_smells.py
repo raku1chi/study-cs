@@ -125,7 +125,7 @@ def format_report(smells: list[Smell], filename: str = "<source>") -> str:
 
     - 1 つの Smell につき 1 行。各行は "{filename}:{lineno} {name}: " で始まり、
       その後に日本語の説明と「value > limit」の形の数値を含める。例:
-        pricing.py:81 calculate_total: 関数が長すぎます（64 行 > 40）
+        pricing.py:80 calculate_total: 関数が長すぎます（70 行 > 40）
     - smells が空なら「問題は見つかりませんでした」を含む 1 行を返す。
     - 末尾に改行を付けない。
     """

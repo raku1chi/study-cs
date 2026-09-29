@@ -12,11 +12,12 @@ Crime Scene』の手法を単純化したもの）。
 入力のログは、次のコマンドの出力の形式です（テストでは exercises/data/hotspots/git_log.txt を使う）:
     git log --numstat --date=short --pretty=format:'--%h--%ad--%aN' --no-renames
 
-    --663677a--2026-09-02--Alice          ← コミットの見出し: --<短い SHA>--<日付>--<作者>
+    --856b66d--2026-09-02--Alice          ← コミットの見出し: --<短い SHA>--<日付>--<作者>
     6	4	shop/billing/invoice.py         ← <追加行数>\\t<削除行数>\\t<パス>
     1	0	shop/notifications/email_templates.py
+    2	1	tests/test_invoice.py
                                           ← コミットの間は空行
-    --c3c95c1--2026-03-25--Carol
+    --7e80dfb--2026-03-25--Carol
     -	-	assets/logo.png                ← バイナリファイルは行数の代わりに "-"
 
 自分のリポジトリで試すには、上のコマンドの出力をファイルに保存して parse_log に渡します。
@@ -84,8 +85,9 @@ def parse_log(text: str) -> list[Commit]:
       SHA・日付（YYYY-MM-DD）・作者とする（作者名に "--" が含まれてもよいように）。
     - 見出しの後の、タブで区切られた 3 つの項目の行が変更（numstat）。行数が "-" なら None。
     - 空行は無視する。
-    - 見出しより前に変更の行がある、項目の数が違う、行数が数字でも "-" でもない、日付が不正、
-      などは ValueError（何行目かをメッセージに含めるとよい）。
+    - 見出しを 3 つの項目に分けられない（作者がないなど）、見出しより前に変更の行がある、
+      変更の行の項目の数が違う、行数が数字でも "-" でもない、日付が不正、などは ValueError
+      （何行目かをメッセージに含めるとよい）。
     - 変更の行が 1 つもないコミット（マージコミットなど）も、changes が空のコミットとして含める。
     """
     raise NotImplementedError("演習1-1: parse_log を実装してください")

@@ -2,7 +2,8 @@
 
 実行: python3 tools/check.py 8.4   （またはこのディレクトリで python3 -m unittest -v test_semver）
 
-範囲指定の期待値は、npm の node-semver の振る舞いに合わせています。
+範囲指定の判定の期待値は、この演習で扱う部分集合について npm の node-semver の振る舞いに合わせています
+（node-semver が受け付ける "1.x"・"^1.2"・"v1.2.3"・"~>1.2.3" などの形は、この演習では ValueError にします）。
 """
 import functools
 import random

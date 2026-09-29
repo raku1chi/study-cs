@@ -121,7 +121,7 @@ False False True
 ```
 
 - `^1.4.2` は「MAJOR を固定」（`>=1.4.2 <2.0.0-0`）、`~1.4.2` は「MINOR まで固定」（`>=1.4.2 <1.5.0-0`）。
-- **0.x 系では `^` の意味が変わる**。`^0.4.2` は `>=0.4.2 <0.5.0-0` で、0.5.0 は含まれません。0.x の段階では MINOR の変更が破壊的でありうる、という SemVer の考え方を反映しています。
+- **0.x 系では `^` の意味が変わる**。`^0.4.2` は `>=0.4.2 <0.5.0-0` で、0.5.0 は含まれません。SemVer の仕様は 0.x を「初期開発中で、いつでも何でも変わりうる」段階としており、npm はその中で「MINOR の変更は破壊的、PATCH は互換」とみなす慣習を採っています。`^0.0.3` はさらに狭く、`>=0.0.3 <0.0.4-0`（0.0.3 だけ）です。
 - **プレリリース版は、明示的に指定しない限り範囲に入らない**。`^1.4.2` の利用者に、1.6.0-beta.1 が勝手にインストールされることはありません。
 
 ### 3.3 依存関係の更新を運用する
@@ -257,6 +257,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from migrate import migrate, status
 
+Path("mig").mkdir(exist_ok=True)                 # 番号付きのマイグレーションを 2 つ用意する
+Path("mig/0001_create_users.sql").write_text("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT);\n")
+Path("mig/0002_add_email.sql").write_text("ALTER TABLE users ADD COLUMN email TEXT;\n")
+
 conn = sqlite3.connect(":memory:")
 clock = lambda: datetime(2026, 9, 28, 3, 0, tzinfo=timezone.utc)
 print(migrate(conn, Path("mig"), clock=clock))     # 1 回目: 2 つ適用
@@ -340,6 +344,8 @@ DORA は、ソフトウェアのデリバリー性能を次の指標で測りま
 | 変更のリードタイム | コミットから本番で動くまでの時間 | 速さ |
 | 変更の失敗率 | デプロイのうち、障害や手直し（ロールバック・修正）が必要になった割合 | 安定性 |
 | デプロイ失敗からの復旧時間 | 失敗したデプロイから回復するまでの時間（以前は「平均復旧時間（MTTR）」と呼ばれていた） | 安定性 |
+
+これは『Accelerate』以来の「4 つの鍵（four keys）」です。2024 年の報告書からは、本番の障害に対応するための予定外のデプロイの割合（デプロイの手戻り率、deployment rework rate）が 5 つ目の指標として加わり、復旧時間は速さ（スループット）の側に、変更の失敗率と手戻り率は不安定さの側に整理し直されています（2026年時点。経緯は [13.7](../../13-technical-leadership/07-delivery-and-productivity/README.md)）。
 
 『Accelerate』が報告したのは、これらの指標で上位の組織は、速さと安定性の **両方** で優れているということです。小さな変更は、テストしやすく、レビューしやすく、壊れても原因がすぐ分かり、戻すのも簡単です。変更をまとめて大きくすると、そのすべてが悪化します。**リリースの頻度を下げて安全にする、は逆効果** なのです。これらの指標を組織の運営にどう使うか（使い方を誤ると数字のゲームになる）は [13.7](../../13-technical-leadership/07-delivery-and-productivity/README.md) で扱います。
 

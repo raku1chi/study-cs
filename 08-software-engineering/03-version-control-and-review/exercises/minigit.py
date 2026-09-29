@@ -192,7 +192,9 @@ def log(store: ObjectStore, head: str, first_parent: bool = False) -> list[str]:
 def is_ancestor(store: ObjectStore, ancestor: str, descendant: str) -> bool:
     """ancestor が descendant 自身か、その祖先なら True（git merge-base --is-ancestor に相当）。
 
-    これが True なら、descendant のブランチに ancestor を「早送り（fast-forward）」でマージできる。
+    これが True なら、ancestor を指しているブランチに descendant をマージするときは、
+    新しいマージコミットを作らずにブランチの ref を descendant まで進めるだけで済む
+    （早送り、fast-forward）。
     """
     raise NotImplementedError("演習1-4: is_ancestor を実装してください")
 

@@ -225,7 +225,7 @@ flowchart TB
 | Stage I | Remzi H. Arpaci-Dusseau, Andrea C. Arpaci-Dusseau "Operating Systems: Three Easy Pieces"（[無料で公開](https://pages.cs.wisc.edu/~remzi/OSTEP/)） | 第4部 |
 | Stage I | Robert Nystrom "Crafting Interpreters"（[無料で公開](https://craftinginterpreters.com/)） | 第3部 |
 | Stage I | James F. Kurose, Keith W. Ross "Computer Networking: A Top-Down Approach" | 第5部 |
-| Stage II | Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』） | 第6・7部 |
+| Stage II | Martin Kleppmann "Designing Data-Intensive Applications"（邦訳『データ指向アプリケーションデザイン』。2026 年に Chris Riccomini との共著で原書第 2 版が出版。邦訳は第 1 版） | 第6・7部 |
 | Stage II | John Ousterhout "A Philosophy of Software Design" | 第8部 |
 | Stage II | Titus Winters ほか "Software Engineering at Google"（邦訳『Google のソフトウェアエンジニアリング』） | 第8部 |
 | Stage II | Mark Richards, Neal Ford "Fundamentals of Software Architecture"（邦訳『ソフトウェアアーキテクチャの基礎』） | 第9部 |
