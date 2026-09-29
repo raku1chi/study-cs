@@ -79,6 +79,6 @@ flowchart LR
 
 ## 次に進む
 
-- [第4部 オペレーティングシステム](../04-operating-systems/01-processes-and-syscalls/README.md) では、3.3 で扱ったヒープの下にある仮想メモリ（[4.2 仮想メモリ](../04-operating-systems/02-virtual-memory/README.md)）や、3.1 のジェネレータが土台となる非同期処理を含む並行処理（[4.4 並行処理と同期](../04-operating-systems/04-concurrency/README.md)）を学びます。
-- [第8部 ソフトウェアエンジニアリング](../08-software-engineering/01-code-quality-and-design/README.md) では、3.1 の継承と合成、関数型の核と命令型の殻、3.2 の型による設計を、設計原則・テスト戦略・コードレビューの実践として深めます。
-- [第11部 セキュリティ](../11-security/01-security-principles/README.md) では、3.3 のメモリ安全性と、3.4 のインジェクションを、脅威モデリングと Web アプリケーションセキュリティの観点から扱います。
+- [第4部 オペレーティングシステム](../04-operating-systems/README.md) では、3.3 で扱ったヒープの下にある仮想メモリ（[4.2 仮想メモリ](../04-operating-systems/02-virtual-memory/README.md)）や、3.1 のジェネレータが土台となる非同期処理を含む並行処理（[4.4 並行処理と同期](../04-operating-systems/04-concurrency/README.md)）を学びます。
+- [第8部 ソフトウェアエンジニアリング](../08-software-engineering/README.md) では、3.1 の継承と合成、関数型の核と命令型の殻、3.2 の型による設計を、設計原則・テスト戦略・コードレビューの実践として深めます。
+- [第11部 セキュリティ](../11-security/README.md) では、3.3 のメモリ安全性と、3.4 のインジェクションを、脅威モデリングと Web アプリケーションセキュリティの観点から扱います。
